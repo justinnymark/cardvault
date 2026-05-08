@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dad & Lad's Card Vault</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;}
+  input,select,textarea,button{font-family:inherit;}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:18px;color:#c9922a;font-weight:700;">Loading Card Vault…</div></div>
+<script type="text/babel" data-presets="react">
+
+var useState = React.useState;
+var useEffect = React.useEffect;
+var useRef = React.useRef;
+var useMemo = React.useMemo;
+
+// ── Constants ──
+var GCS = ["PSA","BGS","SGC","CGC"];
+var BRANDS = ["Topps","Panini","Bowman","Upper Deck","Donruss","Fleer","Stadium Club","Finest","Select","Optic","Mosaic","National Treasures","Chronicles","Other"];
+var WHERE = ["eBay","Card Show","Local Shop","Alt","Fanatics","PWCC","Goldin","COMC","Facebook Group","Other"];
+var STATUS_LBL = {inventory:"In Inventory",sold:"Sold",consigned:"Consigned",grading:"Out for Grading"};
+var BLANK = {playerName:"",year:"",brand:"",set:"",isRookie:false,isAuto:false,isPatch:false,isSerialNumbered:false,printRun:"",gradingCompany:"PSA",grade:"",certNumber:"",bgsCenter:"",bgsCorners:"",bgsEdges:"",bgsSurface:"",purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:"",notes:""};
+
+// ── Helpers ──
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmtMoney(n) { return (n!=null && n!=="") ? "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) : "—"; }
+function fmtPct(n) { return n!=null ? (n>0?"+":"")+Number(n).toFixed(1)+"%" : "—"; }
+function fmtDate(s) { return s ? new Date(s+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"}) : "—"; }
+
+function lsGet(k) { try { var v=localStorage.getItem(k); return v ? {value:v} : null; } catch(e) { return null; } }
+function lsSet(k,v) { try { localStorage.setItem(k,v); } catch(e) {} }
+
+function alertOf(card) {
+  if (!card.purchasePrice || !card.lastSalePrice) return "normal";
+  var pct = ((card.lastSalePrice - card.purchasePrice) / card.purchasePrice) * 100;
+  var gain = card.lastSalePrice - card.purchasePrice;
+  if (gain < 25) return "normal";
+  if (pct >= 25) return "urgent_sale";
+  if (pct >= 10) return "time_to_sell";
+  return "normal";
+}
+
+function compressImage(dataUrl, maxPx, quality) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    img.onload = function() {
+      try {
+        var w = img.width, h = img.height;
+        if (w > maxPx || h > maxPx) { var s = maxPx/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext("2d");
+        if (!ctx) { reject(new Error("No canvas")); return; }
+        ctx.drawImage(img, 0, 0, w, h);
+        var out = cv.toDataURL("image/jpeg", quality);
+        resolve({b64: out.split(",")[1], mime:"image/jpeg", w:w, h:h});
+      } catch(e) { reject(e); }
+    };
+    img.onerror = function() { reject(new Error("Image load failed")); };
+    img.src = dataUrl;
+  });
+}
+
+async function apiCall(key, messages, useSearch) {
+  var body = {model:"claude-sonnet-4-6", max_tokens:1500, messages:messages};
+  if (useSearch) body.tools = [{type:"web_search_20250305", name:"web_search"}];
+  var resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true"
+    },
+    body: JSON.stringify(body)
+  });
+  var text = await resp.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { throw new Error("Bad response from API. Check your key."); }
+  if (data.error) throw new Error(data.error.message || "API error");
+  return data;
+}
+
+async function identifyCardsFromPhoto(key, b64, mime) {
+  var data = await apiCall(key, [{role:"user", content:[
+    {type:"image", source:{type:"base64", media_type:mime, data:b64}},
+    {type:"text", text:"Identify every graded sports card in this photo. Output ONLY a raw JSON array, no markdown, no explanation. Each object: {playerName,year,brand,set,gradingCompany,grade,isRookie,isAuto,isPatch,isSerialNumbered,printRun,certNumber,bgsCenter,bgsCorners,bgsEdges,bgsSurface}. gradingCompany must be PSA, BGS, SGC, or CGC. Return [] if none found."}
+  ]}], false);
+  var txt = (data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+  var s = txt.indexOf("["), e = txt.lastIndexOf("]");
+  if (s === -1 || e === -1) return [];
+  try { return JSON.parse(txt.slice(s, e+1)); } catch(err) { return []; }
+}
+
+async function lookupPrice(key, card) {
+  var q = card.year+" "+card.brand+" "+card.set+" "+card.playerName+" "+card.gradingCompany+" "+card.grade;
+  if (card.isSerialNumbered && card.printRun) q += " /"+card.printRun;
+  var data = await apiCall(key, [{role:"user", content:'Search 130point.com for recent sold listings of: "'+q+'". Return ONLY JSON (no markdown): {"lastSalePrice":number_or_null,"lastSaleDate":"YYYY-MM-DD_or_null","avgRecentPrice":number_or_null,"salesFound":true_or_false}'}], true);
+  var txt = (data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+  var s = txt.indexOf("{"), e = txt.lastIndexOf("}");
+  if (s === -1 || e === -1) return null;
+  try { return JSON.parse(txt.slice(s, e+1)); } catch(err) { return null; }
+}
+
+// ── Style tokens ──
+var C = {
+  gold:"#c9922a", goldBg:"rgba(201,146,42,0.1)",
+  green:"#2e7d52", red:"#c0392b", amber:"#d68910",
+  text:"#1a1a1a", muted:"#888", border:"#e5e1d8",
+  bg:"#f5f4f0", card:"#fff", surface:"#f0ede6"
+};
+var INP = {padding:"9px 11px",background:C.surface,border:"1px solid "+C.border,borderRadius:7,color:C.text,fontSize:14,width:"100%",outline:"none"};
+var BG = {padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:C.gold,color:"#fff",display:"inline-flex",alignItems:"center",gap:6};
+var BO = {padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",background:"transparent",border:"1px solid "+C.border,color:C.muted,display:"inline-flex",alignItems:"center",gap:6};
+var BD = {padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",background:"#fdecea",border:"1px solid #f5a0a0",color:C.red,display:"inline-flex",alignItems:"center",gap:6};
+var LBL = {fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:C.muted,display:"block",marginBottom:5};
+
+function Inp(props) { return <input style={INP} {...props}/>; }
+function Sel(props) {
+  var children = props.children;
+  var rest = Object.assign({}, props);
+  delete rest.children;
+  return <select style={INP} {...rest}>{children}</select>;
+}
+function Fld(props) {
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:props.s2?"span 2":undefined}}>
+      <span style={LBL}>{props.l}</span>
+      {props.children}
+    </div>
+  );
+}
+function HR() { return <hr style={{border:"none",borderTop:"1px solid "+C.border,margin:"14px 0"}}/>; }
+function Sec(props) { return <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>{props.t}</div>; }
+
+// ════════════ SETUP SCREEN ════════════
+function SetupScreen(props) {
+  var onSave = props.onSave;
+  var [key, setKey] = useState("");
+  var [err, setErr] = useState("");
+  var [busy, setBusy] = useState(false);
+
+  async function handleSave() {
+    if (!key.trim()) { setErr("Please paste your API key"); return; }
+    if (!key.trim().startsWith("sk-ant-")) { setErr("Key should start with sk-ant-"); return; }
+    setBusy(true); setErr("");
+    try {
+      await apiCall(key.trim(), [{role:"user",content:"Say OK in one word"}], false);
+      onSave(key.trim());
+    } catch(e) {
+      setErr("Connection failed: "+e.message);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,background:C.bg}}>
+      <div style={{width:"100%",maxWidth:480}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:6,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Dad &amp; Lad's</div>
+          <div style={{fontSize:36,fontWeight:800,color:C.text}}>CARD VAULT</div>
+          <div style={{fontSize:13,color:C.muted,marginTop:8}}>One-time setup — takes 2 minutes</div>
+        </div>
+        <div style={{background:C.card,borderRadius:14,padding:24,border:"1px solid "+C.border}}>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>Enter your Anthropic API Key</div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:20,lineHeight:1.7}}>
+            Powers the AI that reads your card photos. Only entered once.<br/><br/>
+            <strong style={{color:C.text}}>To find your key:</strong><br/>
+            1. Go to <strong>console.anthropic.com</strong><br/>
+            2. Click <strong>API Keys</strong> in the left menu<br/>
+            3. Click <strong>Create Key</strong>, name it anything<br/>
+            4. Copy it (starts with <code style={{background:C.surface,padding:"1px 5px",borderRadius:3}}>sk-ant-</code>) and paste below
+          </div>
+          <Fld l="API Key">
+            <Inp type="password" value={key} onChange={function(e){setKey(e.target.value);}} placeholder="sk-ant-api03-..."/>
+          </Fld>
+          {err && <div style={{marginTop:10,padding:"8px 12px",background:"#fdecea",borderRadius:6,fontSize:12,color:C.red}}>{err}</div>}
+          <button style={{...BG,width:"100%",justifyContent:"center",marginTop:16}} onClick={handleSave} disabled={busy}>
+            {busy ? "Testing connection…" : "Save & Get Started →"}
+          </button>
+        </div>
+        <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:14,lineHeight:1.6}}>
+          Stored only on this device. Scanning 100 photos ≈ $0.10
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ PROFILE SCREEN ════════════
+function ProfileScreen(props) {
+  var counts = props.counts;
+  var onSelect = props.onSelect;
+  var onSettings = props.onSettings;
+
+  return (
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,padding:32,background:C.bg}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:6,textTransform:"uppercase",color:C.gold,marginBottom:6}}>Dad &amp; Lad's</div>
+        <div style={{fontSize:38,fontWeight:800,letterSpacing:2,color:C.text}}>CARD VAULT</div>
+        <div style={{fontSize:12,letterSpacing:4,textTransform:"uppercase",color:C.muted,marginTop:6}}>Graded Card Inventory</div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,letterSpacing:2,textTransform:"uppercase"}}>Whose collection?</div>
+      <div style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center"}}>
+        {[{key:"dad",name:"Dad"},{key:"owen",name:"Owen"}].map(function(p) {
+          return (
+            <div key={p.key} onClick={function(){onSelect(p.key);}}
+              style={{width:170,height:200,border:"1.5px solid "+C.border,borderRadius:14,background:C.card,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:12,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{width:64,height:64,borderRadius:"50%",background:C.goldBg,border:"1.5px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,fontWeight:800,color:C.gold}}>{p.name[0]}</div>
+              <div style={{fontSize:22,fontWeight:800,color:C.text}}>{p.name}</div>
+              <div style={{fontSize:11,color:C.muted}}>{counts[p.key]} card{counts[p.key]!==1?"s":""}</div>
+            </div>
+          );
+        })}
+      </div>
+      <button onClick={onSettings} style={{...BO,fontSize:12,padding:"8px 16px"}}>⚙ Settings</button>
+    </div>
+  );
+}
+
+// ════════════ NAV ════════════
+function Nav(props) {
+  var profile = props.profile;
+  var mode = props.mode;
+  var view = props.view;
+  var onMode = props.onMode;
+  var onView = props.onView;
+  var onSwitch = props.onSwitch;
+  var name = profile==="dad" ? "Dad" : "Owen";
+  var other = profile==="dad" ? "Owen" : "Dad";
+
+  return (
+    <div style={{background:C.card,borderBottom:"1px solid "+C.border,position:"sticky",top:0,zIndex:20,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{display:"flex",alignItems:"center",padding:"0 16px",height:52,gap:10}}>
+        <div style={{fontSize:17,fontWeight:800,color:C.gold}}>⬡ VAULT</div>
+        <div style={{display:"flex",gap:2,flex:1,justifyContent:"center"}}>
+          {[["dashboard","Home"],["inventory","My Cards"],["browse",other+"'s"]].map(function(item) {
+            var v=item[0], l=item[1];
+            return (
+              <button key={v} onClick={function(){onView(v);}}
+                style={{padding:"5px 12px",borderRadius:6,fontSize:11,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:view===v?"1px solid "+C.gold:"1px solid transparent",background:view===v?C.goldBg:"transparent",color:view===v?C.gold:C.muted}}>
+                {l}
+              </button>
+            );
+          })}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{display:"flex",border:"1px solid "+C.border,borderRadius:7,overflow:"hidden"}}>
+            {["buy","sell"].map(function(m) {
+              return (
+                <button key={m} onClick={function(){onMode(m);}}
+                  style={{padding:"5px 12px",fontSize:11,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:"none",background:mode===m?(m==="buy"?"#e8f5ee":"#fdecea"):"transparent",color:mode===m?(m==="buy"?C.green:C.red):C.muted}}>
+                  {m}
+                </button>
+              );
+            })}
+          </div>
+          <div onClick={onSwitch} style={{display:"flex",alignItems:"center",gap:6,padding:"5px 10px",border:"1px solid "+C.border,borderRadius:7,cursor:"pointer",background:C.surface}}>
+            <div style={{width:22,height:22,borderRadius:"50%",background:C.goldBg,border:"1px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:800,color:C.gold}}>{name[0]}</div>
+            <span style={{fontSize:12,fontWeight:600,color:C.text}}>{name}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ DASHBOARD ════════════
+function Dashboard(props) {
+  var cards=props.cards, onRefresh=props.onRefresh, onAdd=props.onAdd;
+  var refreshing=props.refreshing, prog=props.prog, lastRefresh=props.lastRefresh;
+
+  var active = cards.filter(function(x){return x.cardStatus==="inventory";});
+  var cost = active.reduce(function(s,x){return s+(parseFloat(x.purchasePrice)||0);},0);
+  var val = active.reduce(function(s,x){return s+(x.estimatedValue||parseFloat(x.purchasePrice)||0);},0);
+  var pnl = val-cost;
+  var pnlPct = cost>0 ? pnl/cost*100 : null;
+  var alerts = active.filter(function(x){return x.alertStatus!=="normal";});
+  var urgent = active.filter(function(x){return x.alertStatus==="urgent_sale";});
+
+  return (
+    <div style={{padding:16,maxWidth:800,margin:"0 auto"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+        {[["Cards",active.length,C.gold],["Cost",fmtMoney(cost),C.text],["Value",fmtMoney(val),C.text],
+          ["P&L",fmtMoney(pnl)+" "+fmtPct(pnlPct),pnl>=0?C.green:C.red],
+          ["Alerts",alerts.length,alerts.length>0?C.red:C.text],
+          ["Urgent",urgent.length,urgent.length>0?C.red:C.text]
+        ].map(function(item) {
+          var l=item[0],v=item[1],c=item[2];
+          return (
+            <div key={l} style={{background:C.card,borderRadius:10,padding:"12px 14px",border:"1px solid "+C.border}}>
+              <div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:6}}>{l}</div>
+              <div style={{fontSize:18,fontWeight:800,color:c,lineHeight:1}}>{v}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>🔄 Morning Price Refresh</div>
+        <div style={{fontSize:12,color:C.muted,marginBottom:12}}>
+          {refreshing ? "Checking "+prog.card+"… ("+prog.current+"/"+prog.total+")" :
+           lastRefresh ? "Last run: "+lastRefresh :
+           "Checks 130point for all "+active.length+" active cards"}
+        </div>
+        {refreshing && (
+          <div style={{height:4,background:C.border,borderRadius:2,marginBottom:12,overflow:"hidden"}}>
+            <div style={{height:"100%",background:C.gold,width:(prog.total?prog.current/prog.total*100:0)+"%",transition:"width .3s"}}></div>
+          </div>
+        )}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button style={BO} onClick={onAdd}>+ Add Card</button>
+          <button style={{...BG,opacity:refreshing||!active.length?0.4:1}} onClick={onRefresh} disabled={refreshing||!active.length}>
+            {refreshing ? "Running…" : "Run Refresh"}
+          </button>
+        </div>
+      </div>
+
+      {alerts.length > 0 && (
+        <div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:C.muted,marginBottom:12}}>Active Alerts</div>
+          {alerts.map(function(x) {
+            var pct = x.purchasePrice&&x.lastSalePrice ? (x.lastSalePrice-x.purchasePrice)/x.purchasePrice*100 : null;
+            var urg = x.alertStatus==="urgent_sale";
+            return (
+              <div key={x.id} style={{background:C.card,border:"1px solid "+(urg?C.red:C.amber),borderRadius:10,padding:"14px 16px",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:3,background:urg?C.red:C.amber,color:"#fff",display:"inline-block",marginBottom:6,letterSpacing:1}}>{urg?"URGENT SALE":"TIME TO SELL"}</div>
+                  <div style={{fontSize:16,fontWeight:800}}>{x.playerName}</div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:2}}>{x.year} {x.brand} {x.set} · {x.gradingCompany} {x.grade}</div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:4}}>Cost {fmtMoney(x.purchasePrice)} → Last {fmtMoney(x.lastSalePrice)}</div>
+                </div>
+                <div style={{fontSize:26,fontWeight:800,color:urg?C.red:C.amber,marginLeft:16}}>{fmtPct(pct)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {alerts.length===0 && active.length>0 && (
+        <div style={{textAlign:"center",padding:48,color:C.muted}}>
+          <div style={{fontSize:32,marginBottom:12}}>📊</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:4}}>No alerts right now</div>
+          <div style={{fontSize:13}}>Run a refresh to check for price movements</div>
+        </div>
+      )}
+
+      {active.length===0 && (
+        <div style={{textAlign:"center",padding:48,color:C.muted}}>
+          <div style={{fontSize:32,marginBottom:12}}>🃏</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:16}}>No cards yet</div>
+          <button style={BG} onClick={onAdd}>+ Add Your First Card</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ════════════ INVENTORY ════════════
+function InventoryView(props) {
+  var cards=props.cards, onAdd=props.onAdd, onSell=props.onSell, onView=props.onView;
+  var mode=props.mode, readOnly=props.readOnly, ownerName=props.ownerName;
+  var search=props.search, setSearch=props.setSearch;
+  var fAlert=props.fAlert, setFAlert=props.setFAlert;
+  var fStatus=props.fStatus, setFStatus=props.setFStatus;
+
+  var rows = useMemo(function() {
+    var r = cards.slice();
+    if (search) { var q=search.toLowerCase(); r=r.filter(function(x){return (x.playerName||"").toLowerCase().includes(q)||(x.year||"").includes(q)||(x.brand||"").toLowerCase().includes(q)||(x.set||"").toLowerCase().includes(q);}); }
+    if (fAlert!=="all") r=r.filter(function(x){return x.alertStatus===fAlert;});
+    if (fStatus!=="all") r=r.filter(function(x){return x.cardStatus===fStatus;});
+    return r.sort(function(a,b){return (a.playerName||"").localeCompare(b.playerName||"");});
+  }, [cards,search,fAlert,fStatus]);
+
+  return (
+    <div style={{padding:16,maxWidth:800,margin:"0 auto"}}>
+      {readOnly && (
+        <div style={{background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.amber,marginBottom:14,textAlign:"center",fontWeight:600}}>
+          👁 Viewing {ownerName}'s collection — read only
+        </div>
+      )}
+      <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:14}}>
+        <input style={INP} placeholder="Search player, year, brand, set…" value={search} onChange={function(e){setSearch(e.target.value);}}/>
+        <div style={{display:"flex",gap:10}}>
+          <select style={{...INP,flex:1}} value={fAlert} onChange={function(e){setFAlert(e.target.value);}}>
+            <option value="all">All alerts</option>
+            <option value="normal">Normal</option>
+            <option value="time_to_sell">Time to Sell</option>
+            <option value="urgent_sale">Urgent Sale</option>
+          </select>
+          <select style={{...INP,flex:1}} value={fStatus} onChange={function(e){setFStatus(e.target.value);}}>
+            <option value="all">All status</option>
+            <option value="inventory">In Inventory</option>
+            <option value="sold">Sold</option>
+            <option value="consigned">Consigned</option>
+            <option value="grading">Grading</option>
+          </select>
+        </div>
+        {!readOnly && <button style={BG} onClick={onAdd}>+ Add Card</button>}
+      </div>
+
+      {rows.length===0 ? (
+        <div style={{textAlign:"center",padding:48,color:C.muted}}>
+          <div style={{fontSize:32,marginBottom:12}}>🔍</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>{cards.length===0?"No cards yet":"No results"}</div>
+          {cards.length===0 && !readOnly && <button style={BG} onClick={onAdd}>+ Add your first card</button>}
+        </div>
+      ) : rows.map(function(x) {
+        var pnl = x.purchasePrice&&(x.estimatedValue||x.lastSalePrice) ? (x.estimatedValue||x.lastSalePrice)-x.purchasePrice : null;
+        var pnlPct = x.purchasePrice&&pnl!=null ? pnl/x.purchasePrice*100 : null;
+        var alertColor = x.alertStatus==="urgent_sale" ? C.red : x.alertStatus==="time_to_sell" ? C.amber : null;
+        return (
+          <div key={x.id} style={{background:C.card,border:"1px solid "+(alertColor||C.border),borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:18,fontWeight:800,color:C.text}}>{x.playerName||"—"}</div>
+                <div style={{fontSize:12,color:C.muted,marginTop:2}}>{x.year} {x.brand} · {x.set}</div>
+                {x.certNumber && <div style={{fontSize:11,color:C.muted,opacity:.7,marginTop:1}}>Cert #{x.certNumber}</div>}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,background:C.surface,border:"1px solid "+C.border,borderRadius:5,padding:"3px 10px"}}>
+                  <span style={{fontSize:10,fontWeight:700,color:C.muted,letterSpacing:1}}>{x.gradingCompany}</span>
+                  <span style={{fontSize:20,fontWeight:800,color:C.gold}}>{x.grade}</span>
+                </div>
+                {alertColor && <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:alertColor,color:"#fff"}}>{x.alertStatus==="urgent_sale"?"URGENT":"SELL"}</span>}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
+              {x.isRookie && <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#dbeafe",color:"#1d4ed8"}}>RC</span>}
+              {x.isAuto && <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#f3e8ff",color:"#7c3aed"}}>AUTO</span>}
+              {x.isPatch && <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#dcfce7",color:"#15803d"}}>PATCH</span>}
+              {x.isSerialNumbered && <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:C.goldBg,color:C.gold}}>/{x.printRun}</span>}
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+              <div style={{fontSize:12,color:C.muted}}>
+                Cost <strong style={{color:C.text}}>{fmtMoney(x.purchasePrice)}</strong>
+                {x.lastSalePrice && <span> · Last <strong style={{color:C.text}}>{fmtMoney(x.lastSalePrice)}</strong></span>}
+                {pnl!=null && <span> · <strong style={{color:pnl>=0?C.green:C.red}}>{fmtMoney(pnl)} ({fmtPct(pnlPct)})</strong></span>}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={function(){onView(x);}} style={{...BO,padding:"6px 12px",fontSize:12}}>View</button>
+                {!readOnly && x.cardStatus==="inventory" && mode==="sell" && (
+                  <button onClick={function(){onSell(x);}} style={{...BD,padding:"6px 12px",fontSize:12}}>Sell</button>
+                )}
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:x.cardStatus==="inventory"?"#22c55e":x.cardStatus==="sold"?C.muted:x.cardStatus==="consigned"?"#60a5fa":C.amber}}></div>
+              <span style={{fontSize:11,color:C.muted}}>{STATUS_LBL[x.cardStatus||"inventory"]}{x.cardStatus==="sold"&&x.salePrice?" · Sold "+fmtMoney(x.salePrice):""}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ════════════ CARD FORM ════════════
+function CardForm(props) {
+  var card=props.card, upd=props.upd;
+  var G = {display:"grid",gridTemplateColumns:"1fr 1fr",gap:12};
+  return (
+    <div>
+      <Sec t="Card Identity"/>
+      <div style={G}>
+        <Fld l="Player Name *"><Inp value={card.playerName} onChange={function(e){upd("playerName",e.target.value);}} placeholder="e.g. Patrick Mahomes"/></Fld>
+        <Fld l="Year"><Inp value={card.year} onChange={function(e){upd("year",e.target.value);}} placeholder="e.g. 2019"/></Fld>
+        <Fld l="Brand"><Sel value={card.brand} onChange={function(e){upd("brand",e.target.value);}}><option value="">Select…</option>{BRANDS.map(function(b){return <option key={b}>{b}</option>;})}</Sel></Fld>
+        <Fld l="Set"><Inp value={card.set} onChange={function(e){upd("set",e.target.value);}} placeholder="e.g. Prizm, Chrome"/></Fld>
+      </div>
+      <HR/>
+      <Sec t="Attributes"/>
+      <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:12}}>
+        {[["isRookie","Rookie Card"],["isAuto","Auto"],["isPatch","Patch/Relic"],["isSerialNumbered","Serial Numbered"]].map(function(item) {
+          var k=item[0], l=item[1];
+          return (
+            <label key={k} style={{display:"flex",alignItems:"center",gap:7,fontSize:13,cursor:"pointer"}}>
+              <input type="checkbox" checked={!!card[k]} onChange={function(e){upd(k,e.target.checked);}} style={{accentColor:C.gold,width:15,height:15}}/>{l}
+            </label>
+          );
+        })}
+      </div>
+      {card.isSerialNumbered && <div style={{marginBottom:12}}><Fld l="Print Run"><Inp type="number" value={card.printRun} onChange={function(e){upd("printRun",e.target.value);}} placeholder="e.g. 25" style={{maxWidth:130}}/></Fld></div>}
+      <HR/>
+      <Sec t="Grading"/>
+      <div style={G}>
+        <Fld l="Company *"><Sel value={card.gradingCompany} onChange={function(e){upd("gradingCompany",e.target.value);}}>{GCS.map(function(g){return <option key={g}>{g}</option>;})}</Sel></Fld>
+        <Fld l="Grade *"><Inp value={card.grade} onChange={function(e){upd("grade",e.target.value);}} placeholder="e.g. 10, 9.5"/></Fld>
+        <Fld l="Cert Number" s2={true}><Inp value={card.certNumber} onChange={function(e){upd("certNumber",e.target.value);}} placeholder="Cert #"/></Fld>
+      </div>
+      {card.gradingCompany==="BGS" && (
+        <div style={{...G,marginTop:12}}>
+          {[["bgsCenter","Centering"],["bgsCorners","Corners"],["bgsEdges","Edges"],["bgsSurface","Surface"]].map(function(item){
+            var k=item[0],l=item[1];
+            return <Fld key={k} l={"BGS "+l}><Inp value={card[k]} onChange={function(e){upd(k,e.target.value);}} placeholder="9.5"/></Fld>;
+          })}
+        </div>
+      )}
+      <HR/>
+      <Sec t="Financial"/>
+      <div style={G}>
+        <Fld l="Purchase Price"><Inp type="number" step="0.01" value={card.purchasePrice} onChange={function(e){upd("purchasePrice",e.target.value);}} placeholder="0.00"/></Fld>
+        <Fld l="Purchase Date"><Inp type="date" value={card.purchaseDate} onChange={function(e){upd("purchaseDate",e.target.value);}} /></Fld>
+        <Fld l="Where Purchased" s2={true}><Sel value={card.wherePurchased} onChange={function(e){upd("wherePurchased",e.target.value);}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+      </div>
+      <HR/>
+      <Fld l="Notes"><textarea style={{...INP,minHeight:60,resize:"vertical"}} value={card.notes} onChange={function(e){upd("notes",e.target.value);}} placeholder="Any notes…"/></Fld>
+    </div>
+  );
+}
+
+// ════════════ ADD MODAL ════════════
+function AddModal(props) {
+  var apiKey=props.apiKey, mode=props.mode, myCards=props.myCards;
+  var onAdd=props.onAdd, onSellBulk=props.onSellBulk, onClose=props.onClose, toast=props.toast;
+
+  var [tab, setTab] = useState("photo");
+  var [img, setImg] = useState(null);
+  var [b64, setB64] = useState(null);
+  var [mime, setMime] = useState(null);
+  var [imgInfo, setImgInfo] = useState("");
+  var [busy, setBusy] = useState(false);
+  var [statusMsg, setStatusMsg] = useState("");
+  var [identified, setIdentified] = useState([]);
+  var [matched, setMatched] = useState([]);
+  var [form, setForm] = useState(Object.assign({},BLANK));
+  var [saleInfo, setSaleInfo] = useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var [selIds, setSelIds] = useState({});
+  var fileRef = useRef();
+
+  function upd(k,v) { setForm(function(p){return Object.assign({},p,{[k]:v});}); }
+
+  function handleFile(f) {
+    if (!f) return;
+    setStatusMsg("Compressing image…");
+    var r = new FileReader();
+    r.onload = async function(e) {
+      var raw = e.target.result;
+      setImg(raw);
+      try {
+        var c1 = await compressImage(raw, 900, 0.78);
+        var fb = c1.b64, fw = c1.w, fh = c1.h;
+        var sz = Math.round(c1.b64.length*0.75/1024);
+        if (sz > 350) {
+          var c2 = await compressImage(raw, 600, 0.65);
+          fb=c2.b64; fw=c2.w; fh=c2.h;
+          sz=Math.round(c2.b64.length*0.75/1024);
+        }
+        setB64(fb); setMime("image/jpeg");
+        setImgInfo(fw+"×"+fh+"px · ~"+sz+"KB");
+        setStatusMsg("Ready — tap Identify Cards");
+      } catch(err) {
+        setB64(raw.split(",")[1]); setMime(f.type||"image/jpeg");
+        setStatusMsg("Ready — tap Identify Cards");
+      }
+    };
+    r.readAsDataURL(f);
+  }
+
+  async function doIdentify() {
+    if (!b64) return;
+    setBusy(true); setStatusMsg("Reading card labels…");
+    try {
+      var cards = await identifyCardsFromPhoto(apiKey, b64, mime);
+      if (!cards.length) { setStatusMsg("No graded cards found — try a clearer photo"); setBusy(false); return; }
+      setStatusMsg("Found "+cards.length+" card"+(cards.length!==1?"s":"")+"!");
+      if (mode==="sell") {
+        var m = cards.map(function(id) {
+          var match = myCards.find(function(c) {
+            if (c.cardStatus!=="inventory") return false;
+            var a=(id.playerName||"").toLowerCase(), b=(c.playerName||"").toLowerCase();
+            return a&&b&&(a.includes(b)||b.includes(a));
+          })||null;
+          return Object.assign({},id,{match:match});
+        });
+        setMatched(m);
+        var s={};
+        m.forEach(function(x){if(x.match)s[x.match.id]=true;});
+        setSelIds(s);
+      } else {
+        setIdentified(cards);
+      }
+    } catch(e) {
+      setStatusMsg("Error: "+e.message);
+      toast("Error: "+e.message, "error");
+    }
+    setBusy(false);
+  }
+
+  async function doAddAll() {
+    var toAdd = identified.map(function(x) {
+      return Object.assign({},BLANK,x,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null,purchasePrice:form.purchasePrice,purchaseDate:form.purchaseDate,wherePurchased:form.wherePurchased});
+    });
+    onAdd(toAdd); onClose();
+  }
+
+  async function doSellMatched() {
+    var ids = Object.keys(selIds).filter(function(k){return selIds[k];});
+    if (!ids.length) { toast("Select at least one card","error"); return; }
+    if (!saleInfo.price) { toast("Enter a sale price","error"); return; }
+    onSellBulk(ids, saleInfo); onClose();
+  }
+
+  async function doAddManual() {
+    if (!form.playerName||!form.grade) { toast("Player name and grade are required","error"); return; }
+    onAdd([Object.assign({},form,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null})]);
+    onClose();
+  }
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:560,marginTop:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{mode==="sell"?"Sell Cards":"Add Cards"}</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto"}}>
+          {mode==="buy" && (
+            <div style={{display:"flex",borderBottom:"1px solid "+C.border,marginBottom:18}}>
+              {[["photo","📷 Photo"],["manual","📝 Manual"]].map(function(item){
+                var t=item[0],l=item[1];
+                return <button key={t} onClick={function(){setTab(t);}} style={{padding:"10px 18px",fontSize:12,fontWeight:700,cursor:"pointer",border:"none",background:"transparent",color:tab===t?C.gold:C.muted,borderBottom:tab===t?"2px solid "+C.gold:"2px solid transparent"}}>{l}</button>;
+              })}
+            </div>
+          )}
+
+          {(tab==="photo"||mode==="sell") && (
+            <div>
+              {!img ? (
+                <div onClick={function(){fileRef.current.click();}} style={{border:"2px dashed "+C.border,borderRadius:12,padding:36,textAlign:"center",cursor:"pointer"}}>
+                  <div style={{fontSize:44,marginBottom:12}}>📷</div>
+                  <div style={{fontSize:15,color:C.muted,fontWeight:700}}>Tap to upload photo</div>
+                  <div style={{fontSize:12,color:C.muted,marginTop:5}}>{mode==="sell"?"Cards you're selling":"One card or a whole pile"}</div>
+                  <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={function(e){handleFile(e.target.files[0]);}}/>
+                </div>
+              ) : (
+                <div>
+                  <img src={img} style={{width:"100%",maxHeight:240,objectFit:"contain",borderRadius:10,border:"1px solid "+C.border,marginBottom:10}} alt="Cards"/>
+                  {imgInfo && <div style={{fontSize:11,color:C.muted,textAlign:"center",marginBottom:6}}>{imgInfo}</div>}
+                  {statusMsg && <div style={{fontSize:12,fontWeight:700,textAlign:"center",marginBottom:12,padding:"7px 12px",borderRadius:6,background:statusMsg.startsWith("Error")?C.red+"22":C.gold+"22",color:statusMsg.startsWith("Error")?C.red:C.gold}}>{statusMsg}</div>}
+                  <div style={{display:"flex",gap:10,marginBottom:16}}>
+                    <button style={BO} onClick={function(){setImg(null);setB64(null);setIdentified([]);setMatched([]);setStatusMsg("");setImgInfo("");}}>🗑 Clear</button>
+                    <button style={{...BG,flex:1,justifyContent:"center",opacity:busy?0.5:1}} onClick={doIdentify} disabled={busy}>{busy?"Reading labels…":"Identify Cards"}</button>
+                  </div>
+                  {mode==="buy" && identified.length>0 && (
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Identified {identified.length} card{identified.length!==1?"s":""}</div>
+                      {identified.map(function(x,i) {
+                        return (
+                          <div key={i} style={{background:C.surface,borderRadius:8,padding:"10px 14px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div>
+                              <div style={{fontSize:15,fontWeight:800}}>{x.playerName}</div>
+                              <div style={{fontSize:11,color:C.muted}}>{x.year} {x.brand} {x.set} · {x.gradingCompany} {x.grade}{x.isRookie?" · RC":""}{x.isAuto?" · AUTO":""}</div>
+                            </div>
+                            <span style={{color:C.green,fontSize:18,fontWeight:700}}>✓</span>
+                          </div>
+                        );
+                      })}
+                      <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginTop:4}}>
+                        <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:12}}>Purchase Info (applies to all)</div>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                          <Fld l="Price each"><Inp type="number" step="0.01" placeholder="0.00" value={form.purchasePrice} onChange={function(e){setForm(function(p){return Object.assign({},p,{purchasePrice:e.target.value});});}}/></Fld>
+                          <Fld l="Date"><Inp type="date" value={form.purchaseDate} onChange={function(e){setForm(function(p){return Object.assign({},p,{purchaseDate:e.target.value});});}}/></Fld>
+                          <Fld l="Where" s2={true}><Sel value={form.wherePurchased} onChange={function(e){setForm(function(p){return Object.assign({},p,{wherePurchased:e.target.value});});}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {mode==="sell" && matched.length>0 && (
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Matched to inventory</div>
+                      {matched.map(function(m,i) {
+                        return (
+                          <div key={i} style={{background:C.surface,border:"1px solid "+(m.match?C.green:C.red),borderRadius:8,padding:"10px 14px",marginBottom:8,display:"flex",alignItems:"center",gap:12,opacity:m.match?1:0.6}}>
+                            {m.match && <input type="checkbox" checked={!!selIds[m.match.id]} onChange={function(e){var id=m.match.id;var checked=e.target.checked;setSelIds(function(p){var n=Object.assign({},p);n[id]=checked;return n;});}} style={{width:17,height:17,accentColor:C.gold}}/>}
+                            <div style={{flex:1}}>
+                              <div style={{fontSize:15,fontWeight:800}}>{m.playerName}</div>
+                              <div style={{fontSize:11,color:C.muted}}>{m.year} {m.brand} {m.set} · {m.gradingCompany} {m.grade}</div>
+                              <div style={{fontSize:11,marginTop:3,color:m.match?C.green:C.red}}>{m.match?"✓ Found · Cost "+fmtMoney(m.match.purchasePrice):"Not in inventory"}</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginTop:10}}>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                          <Fld l="Sale Price (total)"><Inp type="number" step="0.01" placeholder="0.00" value={saleInfo.price} onChange={function(e){setSaleInfo(function(p){return Object.assign({},p,{price:e.target.value});});}}/></Fld>
+                          <Fld l="Sale Date"><Inp type="date" value={saleInfo.date} onChange={function(e){setSaleInfo(function(p){return Object.assign({},p,{date:e.target.value});});}}/></Fld>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {tab==="manual" && mode==="buy" && <CardForm card={form} upd={upd}/>}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          {mode==="buy" && tab==="photo" && identified.length>0 && <button style={BG} onClick={doAddAll}>+ Add {identified.length} Card{identified.length!==1?"s":""}</button>}
+          {mode==="buy" && tab==="manual" && <button style={BG} onClick={doAddManual}>+ Add Card</button>}
+          {mode==="sell" && matched.length>0 && <button style={BD} onClick={doSellMatched}>💰 Mark {Object.keys(selIds).filter(function(k){return selIds[k];}).length} Sold</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ SELL MODAL ════════════
+function SellModal(props) {
+  var card=props.card, onSell=props.onSell, onClose=props.onClose;
+  var [sd, setSd] = useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var profit = sd.price&&card.purchasePrice ? parseFloat(sd.price)-parseFloat(card.purchasePrice) : null;
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:420,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>Mark as Sold</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:18}}>
+            <div style={{fontSize:18,fontWeight:800}}>{card.playerName}</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:2}}>{card.year} {card.brand} {card.set} · {card.gradingCompany} {card.grade}</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:4}}>Cost basis: {fmtMoney(card.purchasePrice)}</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+            <Fld l="Sale Price *"><Inp type="number" step="0.01" placeholder="0.00" value={sd.price} onChange={function(e){setSd(function(p){return Object.assign({},p,{price:e.target.value});});}}/></Fld>
+            <Fld l="Sale Date"><Inp type="date" value={sd.date} onChange={function(e){setSd(function(p){return Object.assign({},p,{date:e.target.value});});}}/></Fld>
+          </div>
+          {profit!=null && (
+            <div style={{padding:"12px 16px",borderRadius:10,background:profit>=0?"#e8f5ee":"#fdecea"}}>
+              <span style={{fontSize:18,fontWeight:800,color:profit>=0?C.green:C.red}}>{profit>=0?"+":""}{fmtMoney(profit)} ({fmtPct(card.purchasePrice?profit/parseFloat(card.purchasePrice)*100:null)})</span>
+            </div>
+          )}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          <button style={BD} onClick={function(){if(sd.price)onSell(sd);}}>Confirm Sale</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ DETAIL MODAL ════════════
+function DetailModal(props) {
+  var card=props.card, readOnly=props.readOnly, onClose=props.onClose, onUpdate=props.onUpdate, onDelete=props.onDelete;
+  var [editing, setEditing] = useState(false);
+  var [form, setForm] = useState(Object.assign({},card));
+  function upd(k,v) { setForm(function(p){return Object.assign({},p,{[k]:v});}); }
+  var pnl = card.purchasePrice&&(card.estimatedValue||card.lastSalePrice) ? (card.estimatedValue||card.lastSalePrice)-card.purchasePrice : null;
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:520,marginTop:20,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{card.playerName}</div>
+          <div style={{display:"flex",gap:8}}>
+            {!readOnly&&!editing && <button style={{...BO,padding:"6px 12px",fontSize:12}} onClick={function(){setEditing(true);}}>✏ Edit</button>}
+            <button style={{...BO,padding:"6px 12px"}} onClick={onClose}>✕</button>
+          </div>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto"}}>
+          {!editing ? (
+            <div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
+                {[["Year",card.year],["Brand",card.brand],["Set",card.set],["Grade",card.gradingCompany+" "+card.grade],["Cert #",card.certNumber||"—"],["Status",STATUS_LBL[card.cardStatus]]].map(function(item){
+                  var l=item[0],v=item[1];
+                  return <div key={l}><div style={LBL}>{l}</div><div style={{fontSize:15,color:C.text,fontWeight:600}}>{v||"—"}</div></div>;
+                })}
+              </div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+                {card.isRookie && <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#dbeafe",color:"#1d4ed8"}}>Rookie Card</span>}
+                {card.isAuto && <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#f3e8ff",color:"#7c3aed"}}>Autograph</span>}
+                {card.isPatch && <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#dcfce7",color:"#15803d"}}>Patch/Relic</span>}
+                {card.isSerialNumbered && <span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:C.goldBg,color:C.gold}}>/{card.printRun} Print Run</span>}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+                {[["Cost",fmtMoney(card.purchasePrice),""],["Last Sale",fmtMoney(card.lastSalePrice),""],["P&L",pnl!=null?fmtMoney(pnl):"—",pnl!=null?(pnl>=0?"pos":"neg"):""]].map(function(item){
+                  var l=item[0],v=item[1],t=item[2];
+                  return (
+                    <div key={l} style={{background:t==="pos"?"#e8f5ee":t==="neg"?"#fdecea":C.surface,borderRadius:10,padding:"12px 14px"}}>
+                      <div style={LBL}>{l}</div>
+                      <div style={{fontSize:18,fontWeight:800,color:t==="pos"?C.green:t==="neg"?C.red:C.text}}>{v}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              {card.notes && <div style={{fontSize:13,color:C.muted,fontStyle:"italic",padding:"12px 16px",background:C.surface,borderRadius:10}}>{card.notes}</div>}
+            </div>
+          ) : <CardForm card={form} upd={upd}/>}
+        </div>
+        {editing && (
+          <div style={{display:"flex",gap:10,justifyContent:"space-between",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+            <button style={{...BD,padding:"6px 12px",fontSize:12}} onClick={function(){if(window.confirm("Delete this card?"))onDelete(card.id);}}>🗑 Delete</button>
+            <div style={{display:"flex",gap:10}}>
+              <button style={BO} onClick={function(){setEditing(false);setForm(Object.assign({},card));}}>Cancel</button>
+              <button style={BG} onClick={function(){onUpdate(form);}}>✓ Save</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ════════════ SETTINGS MODAL ════════════
+function SettingsModal(props) {
+  var onClose=props.onClose, onResetKey=props.onResetKey;
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:400,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>⚙ Settings</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>API Key</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:10}}>Reset if you need to use a different Anthropic key.</div>
+            <button style={{...BD,padding:"8px 14px",fontSize:12}} onClick={onResetKey}>Reset API Key</button>
+          </div>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px"}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>About</div>
+            <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>Dad &amp; Lad's Card Vault<br/>Graded card inventory tracker<br/>Data stored locally on this device</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ MAIN APP ════════════
+function App() {
+  var [apiKey, setApiKey] = useState(null);
+  var [profile, setProfile] = useState(null);
+  var [view, setView] = useState("dashboard");
+  var [mode, setMode] = useState("buy");
+  var [dadCards, setDadCards] = useState([]);
+  var [owenCards, setOwenCards] = useState([]);
+  var [loading, setLoading] = useState(true);
+  var [toasts, setToasts] = useState([]);
+  var [showAdd, setShowAdd] = useState(false);
+  var [showSell, setShowSell] = useState(null);
+  var [showDetail, setShowDetail] = useState(null);
+  var [showSettings, setShowSettings] = useState(false);
+  var [refreshing, setRefreshing] = useState(false);
+  var [prog, setProg] = useState({current:0,total:0,card:""});
+  var [lastRefresh, setLastRefresh] = useState(null);
+  var [search, setSearch] = useState("");
+  var [fAlert, setFAlert] = useState("all");
+  var [fStatus, setFStatus] = useState("all");
+
+  useEffect(function() {
+    try {
+      var k = localStorage.getItem("cv_api_key");
+      if (k) setApiKey(k);
+      var d = lsGet("cv_dad_inventory"); if (d) setDadCards(JSON.parse(d.value));
+      var o = lsGet("cv_owen_inventory"); if (o) setOwenCards(JSON.parse(o.value));
+      var lr = lsGet("cv_last_refresh"); if (lr) setLastRefresh(lr.value);
+    } catch(e) {}
+    setLoading(false);
+  }, []);
+
+  var myCards = profile==="dad" ? dadCards : owenCards;
+  var otherCards = profile==="dad" ? owenCards : dadCards;
+  var otherName = profile==="dad" ? "Owen" : "Dad";
+
+  function save(p, cards) {
+    lsSet("cv_"+p+"_inventory", JSON.stringify(cards));
+    if (p==="dad") setDadCards(cards); else setOwenCards(cards);
+  }
+
+  function toast(msg, type) {
+    var id = uid();
+    setToasts(function(t){return t.concat([{id:id,msg:msg,type:type||"info"}]);});
+    setTimeout(function(){setToasts(function(t){return t.filter(function(x){return x.id!==id;});});}, 5000);
+  }
+
+  function addCards(cards) { save(profile, myCards.concat(cards)); toast("Added "+cards.length+" card"+(cards.length!==1?"s":"")+"!", "success"); }
+  function updateCard(id, updates) { save(profile, myCards.map(function(x){return x.id===id?Object.assign({},x,updates):x;})); }
+  function deleteCard(id) { save(profile, myCards.filter(function(x){return x.id!==id;})); setShowDetail(null); toast("Card deleted","info"); }
+  function sellCard(id, sd) { save(profile, myCards.map(function(x){return x.id===id?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;})); toast("Card marked as sold","success"); }
+  function sellBulk(ids, sd) { save(profile, myCards.map(function(x){return ids.includes(x.id)?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;})); }
+
+  async function runRefresh() {
+    var active = myCards.filter(function(x){return x.cardStatus==="inventory";});
+    if (!active.length) { toast("No active cards to refresh","info"); return; }
+    setRefreshing(true);
+    var updated = myCards.slice();
+    var alertCount = 0;
+    for (var i=0; i<active.length; i++) {
+      var card = active[i];
+      setProg({current:i+1, total:active.length, card:card.playerName});
+      try {
+        var p = await lookupPrice(apiKey, card);
+        if (p && p.salesFound && p.lastSalePrice) {
+          var a = alertOf(Object.assign({},card,{lastSalePrice:p.lastSalePrice}));
+          if (a!=="normal") alertCount++;
+          updated = updated.map(function(x){return x.id===card.id?Object.assign({},x,{lastSalePrice:p.lastSalePrice,lastSaleDate:p.lastSaleDate,estimatedValue:p.avgRecentPrice||p.lastSalePrice,alertStatus:a}):x;});
+        }
+      } catch(e) {}
+      if (i<active.length-1) await new Promise(function(r){setTimeout(r,500);});
+    }
+    save(profile, updated);
+    var now = new Date().toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+    lsSet("cv_last_refresh", now);
+    setLastRefresh(now);
+    setRefreshing(false);
+    setProg({current:0,total:0,card:""});
+    toast("Done · "+alertCount+" alert"+(alertCount!==1?"s":""), alertCount>0?"info":"success");
+  }
+
+  if (loading) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:18,color:C.gold,fontWeight:700}}>Loading…</div>;
+
+  if (!apiKey) return <SetupScreen onSave={function(k){localStorage.setItem("cv_api_key",k);setApiKey(k);}}/>;
+
+  if (!profile) return <ProfileScreen counts={{dad:dadCards.length,owen:owenCards.length}} onSelect={function(p){setProfile(p);setView("dashboard");}} onSettings={function(){setShowSettings(true);}}/>;
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg}}>
+      <Nav profile={profile} mode={mode} view={view} onMode={setMode} onView={function(v){setView(v);setSearch("");setFAlert("all");setFStatus("all");}} onSwitch={function(){setProfile(null);}}/>
+
+      {view==="dashboard" && <Dashboard cards={myCards} onRefresh={runRefresh} onAdd={function(){setShowAdd(true);}} refreshing={refreshing} prog={prog} lastRefresh={lastRefresh}/>}
+      {(view==="inventory"||view==="browse") && (
+        <InventoryView cards={view==="browse"?otherCards:myCards} onAdd={function(){setShowAdd(true);}} onSell={function(x){setShowSell(x);}} onView={function(x){setShowDetail(x);}} mode={mode} readOnly={view==="browse"} ownerName={otherName} search={search} setSearch={setSearch} fAlert={fAlert} setFAlert={setFAlert} fStatus={fStatus} setFStatus={setFStatus}/>
+      )}
+
+      {showAdd && <AddModal apiKey={apiKey} mode={mode} myCards={myCards} onAdd={addCards} onSellBulk={sellBulk} onClose={function(){setShowAdd(false);}} toast={toast}/>}
+      {showSell && <SellModal card={showSell} onSell={function(sd){sellCard(showSell.id,sd);setShowSell(null);}} onClose={function(){setShowSell(null);}}/>}
+      {showDetail && <DetailModal card={showDetail} readOnly={view==="browse"} onClose={function(){setShowDetail(null);}} onUpdate={function(u){updateCard(showDetail.id,u);setShowDetail(null);toast("Saved","success");}} onDelete={deleteCard}/>}
+      {showSettings && <SettingsModal onClose={function(){setShowSettings(false);}} onResetKey={function(){localStorage.removeItem("cv_api_key");setApiKey(null);setShowSettings(false);}}/>}
+
+      <div style={{position:"fixed",bottom:20,right:20,display:"flex",flexDirection:"column",gap:8,zIndex:200,maxWidth:300}}>
+        {toasts.map(function(t) {
+          return <div key={t.id} style={{background:C.card,borderLeft:"4px solid "+(t.type==="success"?C.green:t.type==="error"?C.red:C.gold),borderRadius:10,padding:"12px 16px",fontSize:13,fontWeight:600,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>{t.msg}</div>;
+        })}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
+</script>
+</body>
+</html>
