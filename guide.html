@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Card Vault — User Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4ee;color:#1a1a1a;line-height:1.6;}
+a{color:#2d6a3f;text-decoration:none;}
+a:hover{text-decoration:underline;}
+code{background:#e8ede3;border:1px solid #ccd8c4;border-radius:4px;padding:1px 6px;font-size:13px;font-family:monospace;}
+
+/* Layout */
+.sidebar{position:fixed;top:0;left:0;width:260px;height:100vh;background:#162a18;overflow-y:auto;padding:24px 0;z-index:10;}
+.main{margin-left:260px;padding:40px 48px;max-width:960px;}
+@media(max-width:768px){.sidebar{display:none;}.main{margin-left:0;padding:24px 20px;}}
+
+/* Sidebar */
+.sidebar-brand{padding:0 24px 24px;border-bottom:1px solid #333;}
+.sidebar-brand .s1{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#2d6a3f;margin-bottom:4px;}
+.sidebar-brand .s2{font-size:20px;font-weight:800;color:#fff;letter-spacing:2px;font-family:"Barlow Condensed",sans-serif;}
+.sidebar-brand .s3{font-size:11px;color:#6b9e73;margin-top:2px;}
+.nav-section{padding:20px 24px 8px;font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#4a7a52;}
+.nav-link{display:block;padding:7px 24px;font-size:13px;color:#98b89e;border-left:2px solid transparent;transition:all .15s;}
+.nav-link:hover{color:#fff;background:rgba(89,147,100,0.15);text-decoration:none;}
+.nav-link.active{color:#2d6a3f;border-left-color:#2d6a3f;background:rgba(45,106,63,0.08);}
+.version-badge{margin:24px;padding:10px 14px;background:#0e1e10;border-radius:8px;border:1px solid #2a4a2e;}
+.version-badge .vl{font-size:9px;color:#4a7a52;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;}
+.version-badge .vn{font-size:13px;color:#2d6a3f;font-weight:700;}
+
+/* Content */
+.page-hero{background:linear-gradient(135deg,#162a18 0%,#1e3d22 60%,#2d6a3f 100%);color:#fff;border-radius:14px;padding:40px 48px;margin-bottom:40px;}
+.page-hero .ph-tag{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:#2d6a3f;margin-bottom:8px;}
+.page-hero h1{font-size:36px;font-weight:800;margin-bottom:8px;}
+.page-hero p{font-size:15px;color:#aaa;max-width:580px;}
+
+section{margin-bottom:48px;}
+.section-title{font-size:24px;font-weight:800;color:#1a1a1a;margin-bottom:6px;padding-bottom:12px;border-bottom:2px solid #ccd8c4;}
+.section-sub{font-size:13px;color:#888;margin-bottom:24px;}
+
+h3{font-size:16px;font-weight:700;color:#1a1a1a;margin:24px 0 10px;}
+p{font-size:14px;color:#444;margin-bottom:12px;}
+ul,ol{padding-left:20px;margin-bottom:16px;}
+li{font-size:14px;color:#444;margin-bottom:6px;}
+
+/* Cards */
+.card{background:#fff;border:1px solid #ccd8c4;border-radius:10px;padding:20px 24px;margin-bottom:14px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.card p{margin-bottom:0;}
+
+/* Steps */
+.steps{counter-reset:step;}
+.step{display:flex;gap:16px;margin-bottom:20px;align-items:flex-start;}
+.step-num{width:32px;height:32px;border-radius:50%;background:#2d6a3f;color:#fff;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.step-body{flex:1;}
+.step-title{font-size:14px;font-weight:700;margin-bottom:4px;}
+.step-desc{font-size:13px;color:#666;}
+
+/* Badges */
+.badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-right:4px;}
+.badge-green{background:#e8f5ee;color:#1e6b3a;}
+.badge-gold{background:rgba(45,106,63,0.1);color:#2d6a3f;}
+.badge-red{background:#fdecea;color:#c0392b;}
+.badge-blue{background:#dbeafe;color:#1d4ed8;}
+.badge-purple{background:#f3e8ff;color:#7c3aed;}
+
+/* Tips */
+.tip{background:#fff8ee;border:1px solid #f0c040;border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#7a5c00;}
+.tip strong{color:#5a4000;}
+.warning{background:#fdecea;border:1px solid #f8a0a0;border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#8b0000;}
+.info{background:#e8f0fe;border:1px solid #93b4f8;border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:13px;color:#1a3a8a;}
+
+/* Table */
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px;}
+th{background:#f0f4ee;padding:10px 14px;text-align:left;font-weight:700;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#888;border-bottom:2px solid #ccd8c4;}
+td{padding:10px 14px;border-bottom:1px solid #ccd8c4;color:#444;vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+
+/* Changelog */
+.changelog-entry{border-left:3px solid #2d6a3f;padding:12px 20px;margin-bottom:16px;background:#fff;border-radius:0 8px 8px 0;}
+.changelog-version{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#2d6a3f;margin-bottom:4px;}
+.changelog-date{font-size:11px;color:#888;margin-bottom:8px;}
+.changelog-items{list-style:none;padding:0;}
+.changelog-items li{font-size:13px;color:#444;padding:2px 0;}
+.changelog-items li::before{content:"+ ";color:#1e6b3a;font-weight:700;}
+
+/* Keyboard shortcuts */
+.shortcut{display:inline-flex;align-items:center;gap:6px;background:#f0f4ee;border:1px solid #ccd8c4;border-radius:6px;padding:4px 10px;font-size:12px;font-family:monospace;}
+
+footer{margin-top:60px;padding:24px 0;border-top:1px solid #ccd8c4;font-size:12px;color:#aaa;}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <div class="s1">Dad &amp; Lad's</div>
+    <div class="s2">CARD VAULT</div>
+    <div class="s3">User Guide</div>
+  </div>
+  <div class="nav-section">Getting Started</div>
+  <a class="nav-link" href="#setup">Initial Setup</a>
+  <a class="nav-link" href="#profiles">Dad &amp; Owen Profiles</a>
+  <a class="nav-link" href="#adding-cards">Adding Cards</a>
+  <div class="nav-section">Daily Use</div>
+  <a class="nav-link" href="#inventory">My Cards &amp; Filters</a>
+  <a class="nav-link" href="#price-refresh">Morning Price Refresh</a>
+  <a class="nav-link" href="#sell-now">Sell Recommendations</a>
+  <a class="nav-link" href="#selling">Selling Cards</a>
+  <a class="nav-link" href="#watchlist">Watchlist</a>
+  <div class="nav-section">Features</div>
+  <a class="nav-link" href="#alerts">Price Alerts</a>
+  <a class="nav-link" href="#manual-price">Manual Price Updates</a>
+  <a class="nav-link" href="#bulk-price">Bulk Price Update</a>
+  <a class="nav-link" href="#export">CSV Export</a>
+  <a class="nav-link" href="#130point">130point Link</a>
+  <div class="nav-section">Maintenance</div>
+  <a class="nav-link" href="#supabase">Cross-Device Sync</a>
+  <a class="nav-link" href="#github-update">Updating the App</a>
+  <a class="nav-link" href="#ebay-api">eBay API (Coming Soon)</a>
+  <a class="nav-link" href="#troubleshooting">Troubleshooting</a>
+  <div class="nav-section">Reference</div>
+  <a class="nav-link" href="#fields">Card Fields Reference</a>
+  <a class="nav-link" href="#changelog">Changelog</a>
+  <div class="version-badge">
+    <div class="vl">Current Version</div>
+    <div class="vn">v1.4 — May 2026</div>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="main">
+
+  <div class="page-hero">
+    <div class="ph-tag">Dad &amp; Lad's</div>
+    <h1>Card Vault User Guide</h1>
+    <p>Complete guide to managing your graded card inventory, tracking prices, and identifying the best cards to buy and sell.</p>
+  </div>
+
+  <!-- ── SETUP ── -->
+  <section id="setup">
+    <div class="section-title">Initial Setup</div>
+    <div class="section-sub">One-time steps to get Card Vault running</div>
+
+    <h3>Your App URL</h3>
+    <p>Card Vault lives at: <a href="https://justinnymark.github.io/cardvault/" target="_blank"><strong>justinnymark.github.io/cardvault/</strong></a></p>
+    <p>Bookmark this on every device you use. On iPhone, tap the share button → <strong>Add to Home Screen</strong> to get an icon like a real app.</p>
+
+    <h3>Anthropic API Key (First-Time Only)</h3>
+    <p>The first time you open the app, it asks for your Anthropic API key. This is what powers the AI that reads card photos and searches for prices.</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Go to console.anthropic.com</div><div class="step-desc">Sign in with the account you already have.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Click API Keys in the left menu</div><div class="step-desc">Then click <strong>Create Key</strong> and give it any name (e.g. "Card Vault").</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Copy the key</div><div class="step-desc">It starts with <code>sk-ant-</code>. Copy the whole thing — you only see it once.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><div class="step-title">Paste it into the Card Vault setup screen</div><div class="step-desc">The app tests the connection and saves the key on your device. You never enter it again on that device.</div></div>
+    </div>
+
+    <div class="tip"><strong>Cost:</strong> Scanning 100 card photos costs roughly $0.10. Running a price refresh on 300 cards costs around $0.30–0.50. Your Anthropic account is billed monthly for actual usage — it is not included in your Claude.ai subscription.</div>
+    <div class="info"><strong>Privacy:</strong> Your API key is stored only on your device. It is never sent anywhere except directly to Anthropic's servers when the app makes a request.</div>
+  </section>
+
+  <!-- ── PROFILES ── -->
+  <section id="profiles">
+    <div class="section-title">Dad &amp; Owen Profiles</div>
+    <div class="section-sub">Two completely separate collections on one app</div>
+
+    <p>When you open the app you choose either <strong>Dad</strong> or <strong>Owen</strong>. Each profile has its own inventory, its own price data, and its own stats. They are completely siloed — nothing crosses over.</p>
+
+    <div class="card">
+      <div class="card-title">👁 Browsing Each Other's Collection</div>
+      <p>Both profiles can view each other's collection in read-only mode. From any profile, tap <strong>Owen's</strong> (or <strong>Dad's</strong>) in the top navigation. You can search and filter but cannot edit or add cards.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔄 Switching Profiles</div>
+      <p>Tap your name badge in the top-right corner of the nav bar to return to the profile selector screen.</p>
+    </div>
+  </section>
+
+  <!-- ── ADDING CARDS ── -->
+  <section id="adding-cards">
+    <div class="section-title">Adding Cards</div>
+    <div class="section-sub">Two methods: photo identification or manual entry</div>
+
+    <h3>Method 1 — Photo ID (Recommended)</h3>
+    <p>Make sure you are in <span class="badge badge-green">BUY</span> mode (top-right toggle), then tap <strong>+ Add Card</strong>.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Select the 📷 Photo tab</div><div class="step-desc">Tap the upload area and select a photo from your camera roll, or take one directly.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Tap "Identify Cards"</div><div class="step-desc">The AI reads every PSA/BGS/SGC/CGC label in the photo — one card or a whole pile at once. It reads player name, year, brand, set, grading company, grade, cert number, and card attributes (RC, Auto, Patch, serial numbered).</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Enter purchase info for each card</div><div class="step-desc">After identification, each card gets its own purchase price, date, and source fields. Fill in what you paid for each card individually.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><div class="step-title">Tap "Add X Cards"</div><div class="step-desc">All identified cards are added to your inventory in one tap.</div></div>
+    </div>
+
+    <div class="tip"><strong>Photo tips:</strong> Lay cards flat with the PSA/BGS label clearly visible. Bright, even lighting works best. One card or 20 at a time — both work fine. If a card isn't identified, try a closer or clearer photo.</div>
+
+    <h3>Method 2 — Manual Entry</h3>
+    <p>Tap <strong>+ Add Card</strong> → select the <strong>📝 Manual</strong> tab. Fill in all fields and tap <strong>Add Card</strong>. Use this for cards where the photo isn't reading cleanly.</p>
+
+    <h3>Buying at a Show — Bulk Photo</h3>
+    <p>At a card show, lay all your purchased cards on a flat surface and take one photo of the group. Upload it in Buy mode and the AI identifies all of them at once. Enter the price for each card individually, then tap Add.</p>
+  </section>
+
+  <!-- ── INVENTORY ── -->
+  <section id="inventory">
+    <div class="section-title">My Cards &amp; Filters</div>
+    <div class="section-sub">Search, filter, and sort your entire collection</div>
+
+    <h3>Search</h3>
+    <p>The search bar at the top of My Cards searches across player name, year, brand, set, cert number, and sport simultaneously. Just start typing.</p>
+
+    <h3>Advanced Filters</h3>
+    <p>Tap the <strong>🔽 Filters</strong> button to expand the full filter panel. The number in parentheses shows how many filters are currently active.</p>
+
+    <table>
+      <thead><tr><th>Filter</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Alert</strong></td><td>Show only Normal, Time to Sell, or Urgent Sale cards</td></tr>
+        <tr><td><strong>Status</strong></td><td>In Inventory, Sold, Consigned, or Out for Grading</td></tr>
+        <tr><td><strong>Grading Co.</strong></td><td>PSA, BGS, SGC, or CGC only</td></tr>
+        <tr><td><strong>Grade</strong></td><td>Specific grade (10, 9.5, 9, etc.) — populated from your actual cards</td></tr>
+        <tr><td><strong>Brand</strong></td><td>Topps, Panini, Bowman, etc. — populated from your actual cards</td></tr>
+        <tr><td><strong>Sport</strong></td><td>Filter by sport if entered on cards</td></tr>
+        <tr><td><strong>Rookie Card</strong></td><td>RC Only or Non-RC</td></tr>
+        <tr><td><strong>Auto</strong></td><td>Autographs only or non-autos</td></tr>
+        <tr><td><strong>Patch/Relic</strong></td><td>Patch cards only or non-patch</td></tr>
+        <tr><td><strong>Min/Max Cost</strong></td><td>Filter by what you paid</td></tr>
+        <tr><td><strong>Min/Max Last Sale</strong></td><td>Filter by recent market price</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sorting</h3>
+    <p>Inside the Filters panel, use the Sort By buttons to sort by Player, Year, Brand, Grading Company, Grade, Cost, Last Sale, or Alert status. Tap the same button again to reverse the sort direction (↑ ↓).</p>
+
+    <p>Tap <strong>✕ Clear</strong> next to the Filters button to instantly reset all filters and sorting.</p>
+
+    <h3>Card Status Indicators</h3>
+    <table>
+      <thead><tr><th>Dot Color</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>🟢 Green</td><td>In Inventory</td></tr>
+        <tr><td>⚪ Grey</td><td>Sold</td></tr>
+        <tr><td>🔵 Blue</td><td>Consigned (at auction house, etc.)</td></tr>
+        <tr><td>🟡 Yellow</td><td>Out for Grading</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Hold vs. Sell Badges</h3>
+    <table>
+      <thead><tr><th>Badge</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-green">✅ Sell</span></td><td>Last sale is 25%+ above cost and gain exceeds $25 — strong sell signal</td></tr>
+        <tr><td><span class="badge badge-gold">⚡ Consider</span></td><td>Last sale is 10–24% above cost — worth thinking about selling</td></tr>
+        <tr><td>⏳ Hold</td><td>Price is positive but not at a sell threshold yet</td></tr>
+        <tr><td><span class="badge badge-red">🔴 Underwater</span></td><td>Last sale is below your purchase price</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── PRICE REFRESH ── -->
+  <section id="price-refresh">
+    <div class="section-title">Morning Price Refresh</div>
+    <div class="section-sub">Automated price lookup across eBay sold listings and auction houses</div>
+
+    <p>The price refresh searches eBay completed listings, PWCC, and Goldin for recent sold prices on every active card in your inventory. It updates the Last Sale price, calculates your P&L, and sets alert status automatically.</p>
+
+    <h3>How to Run</h3>
+    <p>From the <strong>Home</strong> dashboard, tap <strong>Run Refresh</strong>. A progress bar shows which card is being checked. Each card takes a few seconds — 300 cards takes roughly 5–8 minutes total.</p>
+
+    <div class="tip"><strong>Best time to run:</strong> Morning before the market opens, or after a big show when prices may have moved.</div>
+
+    <h3>Date Protection</h3>
+    <p>If you've manually entered a last sale price (e.g. from Card Ladder), the refresh will <strong>not</strong> overwrite it unless it finds a sale that is more recent. Your manual entries are always protected from older auto data.</p>
+
+    <h3>Alert Thresholds</h3>
+    <table>
+      <thead><tr><th>Alert</th><th>Condition</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge badge-red">Urgent Sale</span></td><td>Last sale is 25%+ above cost AND gain exceeds $25</td></tr>
+        <tr><td><span class="badge badge-gold">Time to Sell</span></td><td>Last sale is 10–24% above cost AND gain exceeds $25</td></tr>
+        <tr><td>Normal</td><td>Everything else</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info"><strong>Note on 130point:</strong> 130point has bot protection that blocks automated searches. The price refresh uses eBay and auction house data instead. Use the 130point link inside each card's detail view for manual research.</div>
+  </section>
+
+  <!-- ── SELL NOW ── -->
+  <section id="sell-now">
+    <div class="section-title">Sell Recommendations</div>
+    <div class="section-sub">Your ranked list of cards to move — updated in real time</div>
+
+    <p>Tap <strong>Sell Now</strong> in the navigation. This view ranks every card in your inventory by a score that combines ROI percentage, alert status, and margin. It answers the question: <em>"If I'm going to a show tomorrow, which cards do I bring?"</em></p>
+
+    <h3>Sections</h3>
+    <div class="card"><div class="card-title"><span class="badge badge-green">🟢 Sell Now</span></div><p>Cards with a strong sell or consider signal. Sorted by score — highest ROI and alert status at the top.</p></div>
+    <div class="card"><div class="card-title">⏳ Hold</div><p>Cards that are profitable but haven't hit a sell threshold. Market may not be right yet.</p></div>
+    <div class="card"><div class="card-title"><span class="badge badge-red">🔴 Underwater</span></div><p>Cards where last sale is below your cost. Useful for identifying losses before a show.</p></div>
+    <div class="card"><div class="card-title">❓ No Price Data</div><p>Cards that haven't had a price refresh yet, or where no recent sales were found. Run a refresh or enter manually.</p></div>
+
+    <div class="tip"><strong>Pro tip:</strong> Run the Morning Refresh before checking this screen. The recommendations are only as good as the price data behind them.</div>
+  </section>
+
+  <!-- ── SELLING ── -->
+  <section id="selling">
+    <div class="section-title">Selling Cards</div>
+    <div class="section-sub">Mark individual cards or bulk sells from a photo</div>
+
+    <h3>Selling a Single Card</h3>
+    <p>Switch to <span class="badge badge-red">SELL</span> mode using the toggle in the top-right. In My Cards, a <strong>Sell</strong> button appears on each in-inventory card. Tap it, enter the sale price and date, and tap Confirm. The app shows your profit/loss instantly.</p>
+
+    <h3>Bulk Sell at a Show</h3>
+    <p>When you sell multiple cards at once at a show:</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Switch to Sell mode</div><div class="step-desc">Use the BUY/SELL toggle in the nav.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Tap + Add Card</div><div class="step-desc">Upload a photo of all the cards you just sold together.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Tap Identify Cards</div><div class="step-desc">The AI matches each identified card to your inventory.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><div class="step-title">Enter the sale price and confirm</div><div class="step-desc">Check/uncheck which cards were sold (some may not match), enter the total sale price, and tap Mark Sold.</div></div>
+    </div>
+  </section>
+
+  <!-- ── WATCHLIST ── -->
+  <section id="watchlist">
+    <div class="section-title">Watchlist</div>
+    <div class="section-sub">Track cards you're thinking about buying</div>
+
+    <p>Tap <strong>Watchlist</strong> in the navigation to manage your potential buy list.</p>
+
+    <h3>Adding a Card to Watch</h3>
+    <p>Enter a description of the card in the search field — include year, brand, set, player, and grade for best results. Example: <code>2023 Topps Chrome Patrick Mahomes PSA 10</code></p>
+    <p>Optionally set a <strong>Target Buy Price</strong> — the app will flag when the last sale hits or drops below your target.</p>
+
+    <h3>Checking Prices</h3>
+    <p>Tap the 🔄 button on any watchlist item to look up recent sold prices. The app returns:</p>
+    <ul>
+      <li><strong>Last Sale Price</strong> — most recent completed sale</li>
+      <li><strong>Avg Recent Price</strong> — average of last 3–5 sales</li>
+      <li><strong>Lowest Recent Price</strong> — floor of the recent market</li>
+      <li><strong>Verdict</strong> — Good Buy / Fair Price / Overpriced based on market data</li>
+    </ul>
+    <p>Tap <strong>🔄 Check All</strong> to refresh prices on every watchlist item at once.</p>
+
+    <div class="tip">If a card hits or drops below your target buy price, it's flagged with a green <strong>🎯 AT OR BELOW TARGET</strong> banner.</div>
+  </section>
+
+  <!-- ── ALERTS ── -->
+  <section id="alerts">
+    <div class="section-title">Price Alerts</div>
+    <div class="section-sub">How alerts work and how to act on them</div>
+
+    <p>Alerts appear on the Home dashboard and on each card in inventory. They are recalculated every time a price refresh runs or a price is manually updated.</p>
+
+    <div class="card"><div class="card-title"><span class="badge badge-red">Urgent Sale</span> — Act now</div><p>Last sale is 25% or more above what you paid, and the dollar gain exceeds $25. These cards are at or near a peak — consider selling before the market corrects.</p></div>
+    <div class="card"><div class="card-title"><span class="badge badge-gold">Time to Sell</span> — Watch closely</div><p>Last sale is 10–24% above cost with at least $25 gain. Not urgent but worth listing or bringing to your next show.</p></div>
+
+    <div class="info"><strong>The $25 minimum gain floor:</strong> A $10 card jumping 30% is a $3 gain — not worth your effort. The alert only fires if the actual dollar gain is meaningful. This threshold applies to both alert levels.</div>
+  </section>
+
+  <!-- ── MANUAL PRICE ── -->
+  <section id="manual-price">
+    <div class="section-title">Manual Price Updates</div>
+    <div class="section-sub">Enter prices from Card Ladder or any other source</div>
+
+    <p>Since Card Ladder has bot protection that prevents automated access, you can look up prices there yourself and enter them manually.</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Open the card's detail view</div><div class="step-desc">Tap <strong>View</strong> on any card in My Cards.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Tap "View recent sales on 130point"</div><div class="step-desc">This opens 130point pre-searched for that exact card. You can also check Card Ladder yourself.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Enter the price in "Manual Last Sale Update"</div><div class="step-desc">In the same detail view, scroll to the Manual Last Sale Update section. Enter the price and date, then tap <strong>Save Last Sale Price</strong>.</div></div>
+    </div>
+
+    <div class="tip"><strong>Date protection:</strong> If the morning refresh later finds an eBay sale, it will only overwrite your manual entry if the eBay sale is more recent than the date you entered.</div>
+  </section>
+
+  <!-- ── BULK PRICE ── -->
+  <section id="bulk-price">
+    <div class="section-title">Bulk Price Update</div>
+    <div class="section-sub">Update last sale prices for many cards at once</div>
+
+    <p>From the <strong>Home</strong> dashboard, tap <strong>📋 Bulk Price Update</strong>. Every active card in your inventory appears in a list. Enter the last sale price and date for as many as you want — leave others blank to skip them. Tap <strong>Save All Prices</strong> when done.</p>
+
+    <p>This is the fastest way to catch up after checking Card Ladder — look up 10 cards there, then enter all the prices in one go.</p>
+  </section>
+
+  <!-- ── EXPORT ── -->
+  <section id="export">
+    <div class="section-title">CSV Export</div>
+    <div class="section-sub">Download your full inventory as a spreadsheet</div>
+
+    <p>From the <strong>Home</strong> dashboard, tap <strong>⬇ Export CSV</strong>. A spreadsheet downloads to your device with every card and every field including P&L calculations.</p>
+
+    <p>The CSV includes: Player, Year, Brand, Set, Grading Co, Grade, Cert #, RC, Auto, Patch, Serial, Print Run, Purchase Price, Purchase Date, Where Purchased, Last Sale Price, Last Sale Date, Est. Value, P&L, P&L %, Alert Status, Card Status, Notes.</p>
+
+    <div class="tip">Export regularly as a backup. Your data is stored in your browser's local storage — clearing browser data will delete it. The CSV is your safety net.</div>
+  </section>
+
+  <!-- ── 130POINT ── -->
+  <section id="130point">
+    <div class="section-title">130point Research Link</div>
+    <div class="section-sub">Quick access to full sales history for any card</div>
+
+    <p>Open any card's detail view (tap <strong>View</strong>) and scroll to the bottom. Tap <strong>🔍 View recent sales on 130point</strong>. The link opens 130point pre-searched for that exact card — player, year, brand, set, grading company, and grade are all pre-filled.</p>
+
+    <p>130point shows sales from eBay, Goldin, Heritage, PWCC, Fanatics, Alt, and other platforms in one view. You'll need to pass their bot-check the first time (one-time per browser session).</p>
+  </section>
+
+  <!-- ── SUPABASE SYNC ── -->
+  <section id="supabase">
+    <div class="section-title">Cross-Device Sync (Supabase)</div>
+    <div class="section-sub">Your inventory syncs across Mac, iPhone, and any device with the link</div>
+
+    <p>Card Vault uses <strong>Supabase</strong> as a free cloud database to keep your inventory identical on every device. When you add a card on your Mac, it instantly appears on your phone — and vice versa.</p>
+
+    <h3>One-Time Supabase Setup</h3>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Go to supabase.com → Sign up free</div><div class="step-desc">Use GitHub login or email. No credit card required. The free tier is more than enough for 300+ cards.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Create a new project named "card-vault"</div><div class="step-desc">Choose US East region (closest to Florida). Set a database password and save it. Wait ~2 minutes for provisioning.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Run this SQL to create your tables</div><div class="step-desc">In your Supabase project, click <strong>SQL Editor</strong> in the left sidebar, paste the following, and click <strong>Run</strong>:</div></div>
+    </div>
+    <pre style="background:#1e2d1a;color:#8ecf9a;border-radius:8px;padding:16px 20px;font-size:13px;overflow-x:auto;margin-bottom:16px;line-height:1.6;">create table cards (
+  id text primary key,
+  profile text not null,
+  data jsonb not null,
+  updated_at timestamp default now()
+);
+
+create table watchlist (
+  id text primary key,
+  profile text not null,
+  data jsonb not null,
+  updated_at timestamp default now()
+);</pre>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><div class="step-title">Get your credentials</div><div class="step-desc">Click <strong>Settings</strong> (gear icon) → <strong>API</strong>. Copy two things: your <strong>Project URL</strong> (looks like <code>https://xxxx.supabase.co</code>) and your <strong>anon public key</strong> (starts with <code>eyJ</code>).</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body"><div class="step-title">Enter both keys in Card Vault setup</div><div class="step-desc">Open Card Vault on any device. The setup screen has two sections — one for your Anthropic key and one for Supabase. Enter both and tap <strong>Save &amp; Get Started</strong>. The app tests both connections before saving.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body"><div class="step-title">Repeat on every device</div><div class="step-desc">Open Card Vault on your phone → enter the same two Supabase keys (and your Anthropic key). From that point forward, all data syncs automatically across every device.</div></div>
+    </div>
+
+    <div class="tip"><strong>Anthropic key vs Supabase key:</strong> The Anthropic key is device-specific (stored locally, never in the cloud). The Supabase keys are the same on every device — they point to your shared database.</div>
+    <div class="info"><strong>What syncs:</strong> Dad's inventory, Owen's inventory, Dad's watchlist, Owen's watchlist, and all price/alert data. <br/><strong>What doesn't sync:</strong> Your Anthropic API key (stays on each device for security). Last refresh timestamp (cosmetic, per device).</div>
+
+    <h3>Migrating Existing Data</h3>
+    <p>If you already had cards stored on your Mac before setting up Supabase, those cards are in your Mac's local storage. After completing Supabase setup, your data will push to Supabase automatically the next time you save or add a card. To force a sync immediately, edit any card (even just add a space to Notes and save it).</p>
+
+    <div class="warning"><strong>Important:</strong> If you reset your API keys (Settings → Reset All Keys), you'll need to re-enter both your Anthropic key AND your Supabase keys on that device. Your data in Supabase is safe — resetting keys only affects that device's access.</div>
+  </section>
+
+  <!-- ── GITHUB UPDATE ── -->
+  <section id="github-update">
+    <div class="section-title">Updating the App</div>
+    <div class="section-sub">How to apply upgrades Claude provides</div>
+
+    <p>When a new version of Card Vault is ready, Claude will provide an updated <code>index.html</code> file (and an updated <code>guide.html</code> if the guide changed). Here's how to deploy it:</p>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><div class="step-title">Download the new file from Claude</div><div class="step-desc">In the Claude chat, tap the file attachment and download it to your computer.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><div class="step-title">Go to github.com/justinnymark/cardvault</div><div class="step-desc">Sign in to GitHub and open your cardvault repository.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><div class="step-title">Delete the old file</div><div class="step-desc">Click <code>index.html</code> (or <code>guide.html</code>) → click the trash/delete icon → click <strong>Commit changes</strong>.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><div class="step-title">Upload the new file</div><div class="step-desc">Click <strong>Add file</strong> → <strong>Upload files</strong> → drag in the new file → click <strong>Commit changes</strong>.</div></div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body"><div class="step-title">Hard refresh your browser</div><div class="step-desc">Wait 60 seconds for GitHub to deploy, then press <span class="shortcut">Cmd + Shift + R</span> (Mac) or <span class="shortcut">Ctrl + Shift + R</span> (Windows) to clear the cache.</div></div>
+    </div>
+
+    <div class="warning"><strong>Important:</strong> Your card data is stored in your browser's local storage — it is NOT in the GitHub files. Updating the app never touches your inventory data.</div>
+
+    <h3>Starting a New Development Session with Claude</h3>
+    <p>When continuing Card Vault development, always start a <strong>fresh Claude conversation</strong> (not this one) to avoid hitting usage limits. In the new chat, say:</p>
+    <p><em>"I'm continuing development of my Card Vault app at justinnymark.github.io/cardvault. Here is the current index.html: [paste file contents or attach file]"</em></p>
+    <p>Claude will pick up exactly where we left off.</p>
+  </section>
+
+  <!-- ── EBAY API ── -->
+  <section id="ebay-api">
+    <div class="section-title">eBay API (Pending Approval)</div>
+    <div class="section-sub">Official eBay price data — coming once your developer account is approved</div>
+
+    <p>You've applied for an eBay developer account. Once approved (typically 1 business day), this integration will replace the current web-search based price lookup with direct access to eBay's completed listings database — faster, more reliable, and more complete.</p>
+
+    <p>When your eBay developer account is approved:</p>
+    <ul>
+      <li>Go to <strong>developer.ebay.com</strong> and retrieve your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+      <li>Start a new Claude conversation and say "My eBay developer account was approved — ready to build the eBay API integration into Card Vault"</li>
+      <li>Claude will build the updated app with eBay API support and provide a new <code>index.html</code> to deploy</li>
+    </ul>
+
+    <div class="info"><strong>Also on the roadmap:</strong> Card Ladder API integration — contact Card Ladder support to ask if your paid account includes API access. If so, that single integration covers eBay + Fanatics + Alt + Goldin + PWCC + Heritage all at once.</div>
+  </section>
+
+  <!-- ── TROUBLESHOOTING ── -->
+  <section id="troubleshooting">
+    <div class="section-title">Troubleshooting</div>
+    <div class="section-sub">Common issues and fixes</div>
+
+    <div class="card">
+      <div class="card-title">🔲 App shows blank white screen</div>
+      <p>Do a hard refresh: <span class="shortcut">Cmd + Shift + R</span> (Mac) or <span class="shortcut">Ctrl + Shift + R</span> (Windows). If that doesn't fix it, the most recently uploaded file may have a code error — start a new Claude conversation and ask to diagnose.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📷 Photo not identifying cards</div>
+      <p>Make sure the PSA/BGS/SGC/CGC label is clearly visible and in focus. Try better lighting or a closer shot. If you get an "API Error" message, your Anthropic API key may need to be reset (go to ⚙ Settings in the app).</p>
+    </div>
+    <div class="card">
+      <div class="card-title">💰 Price refresh shows blank last sales</div>
+      <p>Some cards have very few recent sales or the search can't find them. Use the Manual Last Sale Update inside the card's detail view, or use the Bulk Price Update from the Home screen after checking Card Ladder or 130point yourself.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔑 "Connection failed" on API key entry</div>
+      <p>Double-check that the key starts with <code>sk-ant-</code> and was copied in full. Make sure your Anthropic account has a valid payment method and available credits at console.anthropic.com.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 App looks outdated after upload</div>
+      <p>GitHub takes up to 60 seconds to deploy. After uploading a new file, wait a minute then do a hard refresh (<span class="shortcut">Cmd + Shift + R</span>). If still outdated, try opening the URL in a private/incognito window.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 Cards don't appear on my phone / another device</div>
+      <p>You need to enter your Supabase credentials on each device. Open Card Vault on the new device → if it shows the setup screen, enter your Anthropic key and both Supabase keys. If it goes straight to the profile selector, go to ⚙ Settings → Reset All Keys → re-enter everything. Your data in Supabase is safe throughout.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 Changes on one device aren't showing on another</div>
+      <p>Try a hard refresh (<span class="shortcut">Cmd + Shift + R</span>) on the device that seems out of date. Data syncs to Supabase instantly on save, but the browser may be showing a cached version of the page.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">💾 My cards disappeared</div>
+      <p>If Supabase is set up, your data is safe in the cloud — just re-enter your Supabase keys on this device (Settings → Reset All Keys). If Supabase was not configured, data was local only. Export a CSV backup regularly from the Home screen as a safety net.</p>
+    </div>
+  </section>
+
+  <!-- ── FIELDS REFERENCE ── -->
+  <section id="fields">
+    <div class="section-title">Card Fields Reference</div>
+    <div class="section-sub">Every field explained</div>
+
+    <table>
+      <thead><tr><th>Field</th><th>Description</th><th>Auto-filled?</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Player Name</strong></td><td>Full player name</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Year</strong></td><td>Card year (e.g. 2024-25 or 2019)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Brand</strong></td><td>Manufacturer (Topps, Panini, Bowman, etc.)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Set</strong></td><td>Set name (Prizm, Chrome, Kaboom!, etc.)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Grading Company</strong></td><td>PSA, BGS, SGC, or CGC</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Grade</strong></td><td>Numeric grade (10, 9.5, 9, etc.)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Cert Number</strong></td><td>Grading company certificate number</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Rookie Card</strong></td><td>Is this the player's rookie card?</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Auto</strong></td><td>Is it autographed?</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Patch/Relic</strong></td><td>Does it contain a memorabilia piece?</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Serial Numbered</strong></td><td>Is it numbered to a print run?</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Print Run</strong></td><td>The print run number (e.g. /25 = 25 copies)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>BGS Subgrades</strong></td><td>Centering, Corners, Edges, Surface (BGS only)</td><td>✓ Photo ID</td></tr>
+        <tr><td><strong>Purchase Price</strong></td><td>What you paid for the card</td><td>Manual entry</td></tr>
+        <tr><td><strong>Purchase Date</strong></td><td>When you bought it</td><td>Manual entry</td></tr>
+        <tr><td><strong>Where Purchased</strong></td><td>eBay, card show, local shop, etc.</td><td>Manual entry</td></tr>
+        <tr><td><strong>Last Sale Price</strong></td><td>Most recent sold price found in market data</td><td>✓ Auto refresh</td></tr>
+        <tr><td><strong>Last Sale Date</strong></td><td>Date of that last sale</td><td>✓ Auto refresh</td></tr>
+        <tr><td><strong>Est. Value</strong></td><td>Average of recent sales (more stable than last sale alone)</td><td>✓ Auto refresh</td></tr>
+        <tr><td><strong>Alert Status</strong></td><td>Normal / Time to Sell / Urgent Sale</td><td>✓ Calculated</td></tr>
+        <tr><td><strong>Card Status</strong></td><td>In Inventory / Sold / Consigned / Out for Grading</td><td>Set manually</td></tr>
+        <tr><td><strong>Notes</strong></td><td>Free text — anything extra you want to track</td><td>Manual entry</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ── CHANGELOG ── -->
+  <section id="changelog">
+    <div class="section-title">Changelog</div>
+    <div class="section-sub">Version history and what changed</div>
+
+    <div class="changelog-entry">
+      <div class="changelog-version">v1.4</div>
+      <div class="changelog-date">May 8, 2026</div>
+      <ul class="changelog-items">
+        <li>Supabase cloud sync — inventory now syncs across all devices in real time</li>
+        <li>Setup screen updated to collect Supabase Project URL and anon key</li>
+        <li>Settings screen shows Supabase connection status and Reset All Keys option</li>
+        <li>Branding updated to match Dad &amp; Lad's Sports logo — field green palette, Barlow Condensed font</li>
+        <li>Guide updated with cross-device sync setup instructions and new troubleshooting entries</li>
+      </ul>
+    </div>
+    <div class="changelog-entry">
+      <div class="changelog-version">v1.3</div>
+      <div class="changelog-date">May 8, 2026</div>
+      <ul class="changelog-items">
+        <li>Advanced filter panel on My Cards — filter by grade, grading company, brand, sport, RC, auto, patch, price ranges</li>
+        <li>Sort buttons — sort by player, year, brand, grade, cost, last sale, alert</li>
+        <li>Active filter count badge and one-tap clear</li>
+        <li>Date-aware price refresh — manual entries protected from older auto data</li>
+        <li>This user guide added at /guide.html</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-version">v1.2</div>
+      <div class="changelog-date">May 8, 2026</div>
+      <ul class="changelog-items">
+        <li>Sell Recommendation tab — cards ranked by ROI and alert status</li>
+        <li>Watchlist tab — track potential buys with price lookup and buy verdict</li>
+        <li>Hold vs Sell indicators on every card</li>
+        <li>Bulk Price Update modal from Home dashboard</li>
+        <li>CSV Export from Home dashboard</li>
+        <li>Manual Last Sale Update inside card detail view</li>
+        <li>130point research link on every card detail</li>
+        <li>Price refresh switched from 130point to eBay sold listings</li>
+        <li>Per-card purchase info after bulk photo identification</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-version">v1.1</div>
+      <div class="changelog-date">May 8, 2026</div>
+      <ul class="changelog-items">
+        <li>Moved from Claude.ai artifact to GitHub Pages for direct API access</li>
+        <li>Photo identification now works (direct Anthropic API calls)</li>
+        <li>API key setup screen with connection test</li>
+        <li>Price refresh save bug fixed</li>
+      </ul>
+    </div>
+
+    <div class="changelog-entry">
+      <div class="changelog-version">v1.0</div>
+      <div class="changelog-date">May 8, 2026</div>
+      <ul class="changelog-items">
+        <li>Initial build — Dad and Owen profiles, inventory management, morning price refresh, sell/buy mode, alert system</li>
+      </ul>
+    </div>
+
+  </section>
+
+  <footer>
+    <p>Dad &amp; Lad's Card Vault · Built with Claude · Guide version 1.4 · May 2026</p>
+    <p style="margin-top:6px;"><a href="https://justinnymark.github.io/cardvault/">← Back to Card Vault</a> &nbsp;|&nbsp; <a href="https://console.anthropic.com">Anthropic Console</a> &nbsp;|&nbsp; <a href="https://www.130point.com">130point</a> &nbsp;|&nbsp; <a href="https://www.cardladder.com">Card Ladder</a></p>
+  </footer>
+
+</div>
+
+<script>
+// Highlight active nav link based on scroll position
+var sections = document.querySelectorAll('section[id]');
+var navLinks = document.querySelectorAll('.nav-link');
+window.addEventListener('scroll', function() {
+  var scrollY = window.scrollY;
+  sections.forEach(function(section) {
+    var top = section.offsetTop - 80;
+    var bottom = top + section.offsetHeight;
+    if (scrollY >= top && scrollY < bottom) {
+      navLinks.forEach(function(link) {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === '#' + section.id) {
+          link.classList.add('active');
+        }
+      });
+    }
+  });
+});
+// Smooth scroll
+navLinks.forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    var target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({behavior: 'smooth'});
+  });
+});
+</script>
+</body>
+</html>
