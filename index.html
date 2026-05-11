@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dad & Lad's Card Vault</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4ee;}
+input,select,textarea,button{font-family:inherit;}
+a{text-decoration:none;}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:18px;color:#2d6a3f;font-weight:700;">Loading Card Vault…</div></div>
+<script type="text/babel" data-presets="react">
+var useState=React.useState,useEffect=React.useEffect,useRef=React.useRef,useMemo=React.useMemo;
+
+// ── Constants ──
+var LOGO_B64="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5Ojf/2wBDAQoKCg0MDRoPDxo3JR8lNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzf/wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgIDAQAAAAAAAAAAAAAABAYABQIDBwH/xAA0EAACAQMCBAQEBQMFAAAAAAABAgMEBREAIQYSEzEiQVFhFDKRoQcVcYGxFiNCU3LB0eH/xAAaAQEAAwEBAQAAAAAAAAAAAAAAAgMEAQUG/8QAIBEAAgIBBQEBAQAAAAAAAAAAAAECERIDBBMhUTFhsf/aAAwDAQACEQMRAD8A7N1NTqaC6vvqdX31GzlhvU1OpoLq++p1ffSxYb1NTqaC6vvqdX30sWG9TU6mgur76nV99LFhvU1OpquasiSaOFpFEsgYohO7AYzj9MjWzq++lgA63vqdcHOCNvfSpxdxB+S2h5oiPiZT04B6N5t+w3+mlvg2+XWktr1FTb5qq1tOVEsOHeJjjJK/MykkZb1J/TVeQUW1Z06OpSUExurgdyrA/wAay6p1zai4araSlalp7nRwSiojlYRBl8UYOAw77k+IegGjZM2alucddd6aCW4u3wxd5CI8k5O+4wGA2wNhqREfOqffWLVCqQGYKScAE4JOuePY68mFvz6Ex09OaZgZmAc4kCsxzs3iX9cH20a1BUR0NqRK+gepttQ8rPUOzKCwYBc5yMc3n6aAeOqffWD1SJC8zSKI0BLPnYAd99IVTZ7lWPWcl4py1TOtQAkjjpYDKAuD2wVPpkasZrW0d0erSUCh+DkielRmXmJDEkeQySTn10sWhZ41u9X+ZUN3oLlJLTzI8lPCEK9FEflEo9mOSGOM7jtp/wCF+II79Z4q1cLL8kyD/Bx3/Y9x7HXPDXSz2q48RU9GtPJJbo6BaVJeZUiPgaYIdxGAqqBuOYk6s+A6GqskNDLUEiK808kyRkfKY2HKf3Rs/TUE+y6aWJUfiCtRV4qFilanpnEJkVSVRioY5PYE8y9/TQ0c9LSxR1FvpGtV7khjkozFVsVKZ747iRgNg3hYHOASMt3D/FVJBV3PhutQRCuqcrVOw5ArqisGz22Gx33I1T/ixwcbNW/m9FztQVLhXUnJgfGw/wBpA29MY9Ncrq0dh8SEa4TRVU5qEi6M0hJmRRhefzK+Yz6eR9uz7NRHiS1WuYViwSxQASELzMOYD0IwfD2OR7a5ySWOSSST9dWdHcLnZKeZYI3g64DczxHO2e2dvPUU6Z2cHJdDZcLHQRhoJKyNa6vq2ZFMRcyc3OAqxg9x1Dv66NrOEHonuKVrrG1wjYJ1oBhSCCGG+CQM9vXOmrgmvsVZHUQUMa194oaZI5Zunh5iVySHPYc5K+WOXQvA1fxFXw3j+u6aUUkI5UmmiVREVzzgYGSMYPN2276vxdfSjF+izKKSzV9XeaWopJf7PKtHGypnZQcHJ8l7AaU6jiy9yls18ixknwgKNvQkDfVvWW22yyyVklH0MjnRD4UcA5J2Pcjy21vt9Pa6e5CshpIJTA/gieFpImGAcsPPOf21jevG6NuntJY2/v6H/htwjdLvclvdxZ4LdyFG5xj4pCvKUC/6eNvTbb1Gy6cQTVPFlmtsNRFU0FDzxQ1EZz1tmXJPqAAp8iRnsRrfxbxVeOJqE0drp6ihpTlJVVkxKR5F+YEL7YHvpe4e4eqKGthq6uaMdLJWJCTuRjv21e2qpGackk7fZVcS08kt2BiTm+IRRuQASNsZO3kNdSslfTVnAUtn4zuVvhkMZhR2rY3cpjwMeUnxA4+g0jmbIwcEeh1iHRTlUQH2UDUIzoyR3aUUmvgZ+GtptqX+knqJxV1PIxjhNOyxLJnC+NvmPc7DHvnXS+NxbILIyXqeBIYo3mR5sDM2fDjPnknYa5YlU6Oro7KynKsDgg+2pe7jcrvHD1655HhcOvWHMpxnYjz7nUozXxli3kZdPovOEuLOGbPDc6qjqYheKkcxildhHUkZ5VBx4Tk/U5/Q+Pja41nDV1gvFJDTVrF0ijgctzKwySx3AABxkEk4Ow1zIWu4SELPWxCMnLCOMAn6AaYOv9NTlqUqRCW4Uax7DWgVqmAyESyZZyx7AYxgDyHi17DG/TBjbE0WYzns4HYH9sb+WdBU1WYJMupkj5Ai8vzKMk+ff/zWbXAiSU08RAcA80mAFI2O3ntjXlPS1Lo96G/2zhnlX9CYKkNLOyggFlBB7hgNx/Gt/X1VJLyrjJJzkk9yfM696+tkVikj5zW11qakp+s0ammODhC8qX6lvkbniYLt8rbYP3+x17S8IXhJ1ae3u0YDErjOfDt9yPodWYsz8cvBb1NXrcHX5UJ+AkJAzgdz3/6+41vquD7y1XKYLe6xGQ8g7YGTj+P40xfg45eC3qaY5uELy/S6VukXEaBsjHi2yfv9jrw8I3k0yKLdIJRIxZiO6kJj7k/Q6YsccvBd1NMScI3kU8wa2yGU8pQ+gGeb/jUh4RvSSHrW2Vl5HAxv4uVsfcD7aYsccvBd1NMMHCF7WojMttkMYkXnHfI5hn7axbg++s7FLdIFJOM+Q8v5+x0xfg45eH//2Q==";
+var GCS=["PSA","BGS","SGC","CGC"];
+var BRANDS=["Topps","Panini","Bowman","Upper Deck","Donruss","Fleer","Stadium Club","Finest","Select","Optic","Mosaic","National Treasures","Chronicles","Other"];
+var WHERE=["eBay","Card Show","Local Shop","Alt","Fanatics","PWCC","Goldin","COMC","Facebook Group","Other"];
+var STATUS_LBL={inventory:"In Inventory",sold:"Sold",consigned:"Consigned",grading:"Out for Grading"};
+var BLANK={playerName:"",year:"",brand:"",set:"",isRookie:false,isAuto:false,isPatch:false,isSerialNumbered:false,printRun:"",gradingCompany:"PSA",grade:"",certNumber:"",bgsCenter:"",bgsCorners:"",bgsEdges:"",bgsSurface:"",purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:"",notes:""};
+
+// ── Helpers ──
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function fmtMoney(n){return(n!=null&&n!=="")?("$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})):"—";}
+function fmtPct(n){return n!=null?((n>0?"+":"")+Number(n).toFixed(1)+"%"):"—";}
+function fmtDate(s){return s?new Date(s+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"}):"—";}
+function lsGet(k){try{var v=localStorage.getItem(k);return v?{value:v}:null;}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+// ── Supabase helpers ──
+var _sbUrl=null,_sbKey=null;
+function sbInit(){
+  _sbUrl=localStorage.getItem("cv_sb_url");
+  _sbKey=localStorage.getItem("cv_sb_key");
+}
+function sbReady(){return !!(_sbUrl&&_sbKey);}
+
+async function sbGet(table,profile){
+  if(!sbReady())return null;
+  try{
+    var url=_sbUrl+"/rest/v1/"+table+"?profile=eq."+encodeURIComponent(profile)+"&select=data";
+    var r=await fetch(url,{headers:{"apikey":_sbKey,"Authorization":"Bearer "+_sbKey,"Content-Type":"application/json"}});
+    var rows=await r.json();
+    if(rows&&rows.length>0&&rows[0].data)return rows[0].data;
+    return null;
+  }catch(e){console.log("sbGet error:",e.message);return null;}
+}
+
+async function sbSet(table,profile,data){
+  if(!sbReady())return;
+  try{
+    var url=_sbUrl+"/rest/v1/"+table;
+    var payload={id:table+"_"+profile,profile:profile,data:data,updated_at:new Date().toISOString()};
+    await fetch(url,{
+      method:"POST",
+      headers:{"apikey":_sbKey,"Authorization":"Bearer "+_sbKey,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},
+      body:JSON.stringify(payload)
+    });
+  }catch(e){console.log("sbSet error:",e.message);}
+}
+
+async function sbMergeAndSet(table,profile,localCards){
+  if(!sbReady()){
+    // No Supabase — just use local
+    return;
+  }
+  try{
+    // Fetch existing cloud cards
+    var cloudCards=await sbGet(table,profile);
+    var merged=localCards.slice(); // start with local
+    if(cloudCards&&Array.isArray(cloudCards)){
+      // Add any cloud cards not present in local (by id)
+      var localIds=new Set(localCards.map(function(c){return c.id;}));
+      cloudCards.forEach(function(cc){
+        if(!localIds.has(cc.id)){
+          merged.push(cc);
+        }
+      });
+    }
+    // Save merged result to Supabase
+    var url=_sbUrl+"/rest/v1/"+table;
+    var payload={id:table+"_"+profile,profile:profile,data:merged,updated_at:new Date().toISOString()};
+    await fetch(url,{
+      method:"POST",
+      headers:{"apikey":_sbKey,"Authorization":"Bearer "+_sbKey,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},
+      body:JSON.stringify(payload)
+    });
+    // Update local state and storage with merged result
+    lsSet("cv_"+profile+"_inventory",JSON.stringify(merged));
+  }catch(e){
+    console.log("sbMergeAndSet error:",e.message);
+    // Fallback: just save what we have locally
+    await sbSet(table,profile,localCards);
+  }
+}
+
+async function testSupabase(url,key){
+  var r=await fetch(url+"/rest/v1/cards?limit=1",{headers:{"apikey":key,"Authorization":"Bearer "+key}});
+  if(!r.ok){var t=await r.text();throw new Error(t);}
+  return true;
+}
+
+// ── Alert / ROI logic ──
+function alertOf(card){
+  if(!card.purchasePrice||!card.lastSalePrice)return"normal";
+  var pct=((card.lastSalePrice-card.purchasePrice)/card.purchasePrice)*100;
+  var gain=card.lastSalePrice-card.purchasePrice;
+  if(gain<25)return"normal";
+  if(pct>=25)return"urgent_sale";
+  if(pct>=10)return"time_to_sell";
+  return"normal";
+}
+
+// Unrealized G/L — cards still in inventory
+function unrealizedGL(card){
+  if(!card.purchasePrice)return null;
+  var mkt=parseFloat(card.estimatedValue||card.lastSalePrice||0);
+  if(!mkt)return null;
+  var cost=parseFloat(card.purchasePrice);
+  return{dollars:mkt-cost,pct:((mkt-cost)/cost)*100};
+}
+
+// Realized G/L — cards that have been sold
+function realizedGL(card){
+  if(!card.purchasePrice||!card.salePrice)return null;
+  var profit=parseFloat(card.salePrice)-parseFloat(card.purchasePrice);
+  return{dollars:profit,pct:(profit/parseFloat(card.purchasePrice))*100};
+}
+
+// Annualized ROI for sold cards
+function annualizedROI(card){
+  if(!card.purchasePrice||!card.salePrice||!card.purchaseDate||!card.saleDate)return null;
+  var days=(new Date(card.saleDate)-new Date(card.purchaseDate))/(1000*60*60*24);
+  if(days<1)return null;
+  var simpleRoi=(parseFloat(card.salePrice)-parseFloat(card.purchasePrice))/parseFloat(card.purchasePrice);
+  return(Math.pow(1+simpleRoi,365/days)-1)*100;
+}
+
+// Days held
+function daysHeld(card){
+  if(!card.purchaseDate)return null;
+  var end=card.saleDate?new Date(card.saleDate):new Date();
+  return Math.round((end-new Date(card.purchaseDate))/(1000*60*60*24));
+}
+
+function roiPct(card){
+  if(!card.purchasePrice||!card.lastSalePrice)return null;
+  return((card.lastSalePrice-card.purchasePrice)/card.purchasePrice)*100;
+}
+
+function holdSignal(card){
+  var roi=roiPct(card);
+  if(roi==null)return"unknown";
+  if(roi>=25)return"sell";
+  if(roi>=10)return"watch";
+  if(roi>=0)return"hold";
+  return"underwater";
+}
+
+function sellScore(card){
+  var roi=roiPct(card)||0;
+  var bonus=card.alertStatus==="urgent_sale"?50:card.alertStatus==="time_to_sell"?25:0;
+  return roi+bonus;
+}
+
+// ── Image compression ──
+function compressImage(dataUrl,maxPx,quality){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var w=img.width,h=img.height;
+        if(w>maxPx||h>maxPx){var s=maxPx/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+        var cv=document.createElement("canvas");
+        cv.width=w;cv.height=h;
+        var ctx=cv.getContext("2d");
+        if(!ctx){reject(new Error("No canvas"));return;}
+        ctx.drawImage(img,0,0,w,h);
+        var out=cv.toDataURL("image/jpeg",quality);
+        resolve({b64:out.split(",")[1],mime:"image/jpeg",w:w,h:h});
+      }catch(e){reject(e);}
+    };
+    img.onerror=function(){reject(new Error("Load failed"));};
+    img.src=dataUrl;
+  });
+}
+
+// ── API ──
+async function apiCall(key,messages,useSearch){
+  var body={model:"claude-sonnet-4-6",max_tokens:1500,messages:messages};
+  if(useSearch)body.tools=[{type:"web_search_20250305",name:"web_search"}];
+  var resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify(body)
+  });
+  var text=await resp.text();
+  var data;
+  try{data=JSON.parse(text);}catch(e){throw new Error("Bad API response. Check your key.");}
+  if(data.error)throw new Error(data.error.message||"API error");
+  return data;
+}
+
+async function identifyCardsFromPhoto(key,b64,mime){
+  var data=await apiCall(key,[{role:"user",content:[
+    {type:"image",source:{type:"base64",media_type:mime,data:b64}},
+    {type:"text",text:"Identify every graded sports card in this photo. Output ONLY a raw JSON array, no markdown, no explanation. Each object must have these exact fields: {playerName,year,brand,set,gradingCompany,grade,isRookie,isAuto,isPatch,isSerialNumbered,printRun,certNumber,bgsCenter,bgsCorners,bgsEdges,bgsSurface}. gradingCompany must be PSA, BGS, SGC, or CGC. IMPORTANT certification number rules: For PSA cards the cert number is printed on the label (e.g. 149962710). For BGS/Beckett cards the cert number is the long number printed on the bottom barcode area of the label, often starting with zeros (e.g. 0012084788) — look carefully at the barcode region. For SGC and CGC cards the cert number is also on the label. Always populate certNumber even if you have to read it carefully. For BGS cards also read all four subgrades: Centering, Corners, Edges, Surface — these are printed on the top of the BGS label. Return [] if no graded cards found."}
+  ]}],false);
+  var txt=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+  var s=txt.indexOf("["),e=txt.lastIndexOf("]");
+  if(s===-1||e===-1)return[];
+  try{return JSON.parse(txt.slice(s,e+1));}catch(err){return[];}
+}
+
+async function lookupPrice(key,card){
+  var q=card.year+" "+card.brand+" "+card.set+" "+card.playerName+" "+card.gradingCompany+" "+card.grade;
+  if(card.isSerialNumbered&&card.printRun)q+=" /"+card.printRun;
+  var prompt='Search for recent SOLD listings of this graded sports card: "'+q+'". '+
+    'Search eBay completed listings, Goldin Auctions, PWCC, and Heritage Auctions sold results. '+
+    'Find the 3-5 most recent actual sold prices — ignore active listings. '+
+    'Return ONLY a JSON object, no markdown: '+
+    '{"lastSalePrice":number_or_null,"lastSaleDate":"YYYY-MM-DD_or_null","avgRecentPrice":number_or_null,"salesFound":true_or_false,"source":"where you found it"}. '+
+    'If no sales found, return {"lastSalePrice":null,"lastSaleDate":null,"avgRecentPrice":null,"salesFound":false,"source":null}.';
+  var data=await apiCall(key,[{role:"user",content:prompt}],true);
+  var txt=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+  var s=txt.indexOf("{"),e=txt.lastIndexOf("}");
+  if(s===-1||e===-1)return null;
+  try{return JSON.parse(txt.slice(s,e+1));}catch(err){return null;}
+}
+
+async function lookupWatchlistCard(key,query){
+  var prompt='Search eBay completed listings and recent auction results for this graded sports card: "'+query+'". '+
+    'Find the 3-5 most recent sold prices. '+
+    'Return ONLY a JSON object, no markdown: '+
+    '{"lastSalePrice":number_or_null,"avgRecentPrice":number_or_null,"lowestRecentPrice":number_or_null,"highestRecentPrice":number_or_null,"salesFound":boolean,"priceNote":"brief note on market trend"}. '+
+    'If not found: {"lastSalePrice":null,"avgRecentPrice":null,"lowestRecentPrice":null,"highestRecentPrice":null,"salesFound":false,"priceNote":"No recent sales found"}.';
+  var data=await apiCall(key,[{role:"user",content:prompt}],true);
+  var txt=(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+  var s=txt.indexOf("{"),e=txt.lastIndexOf("}");
+  if(s===-1||e===-1)return null;
+  try{return JSON.parse(txt.slice(s,e+1));}catch(err){return null;}
+}
+
+function matchToInventory(identified,inventory){
+  return identified.map(function(id){
+    var match=inventory.find(function(c){
+      if(c.cardStatus!=="inventory")return false;
+      var a=(id.playerName||"").toLowerCase(),b=(c.playerName||"").toLowerCase();
+      return a&&b&&(a.includes(b)||b.includes(a));
+    })||null;
+    return Object.assign({},id,{match:match});
+  });
+}
+
+// ── CSV Export ──
+function csvRow(vals){
+  return vals.map(function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");
+}
+function downloadCSV(csv,filename){
+  var blob=new Blob([csv],{type:"text/csv"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");
+  a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+
+// Internal export — full detail, all cards, all statuses
+function exportCSVInternal(cards){
+  var headers=["Player","Year","Brand","Set","Grading Co","Grade","Cert #","BGS Center","BGS Corners","BGS Edges","BGS Surface","RC","Auto","Patch","Serial Numbered","Print Run","Purchase Price","Purchase Date","Where Purchased","Last Sale Price","Last Sale Date","7-Day Avg Price","7-Day Sale Count","30-Day Avg Price","30-Day Sale Count","Market Value","Unrealized G/L $","Unrealized G/L %","Realized G/L $","Realized G/L %","Simple ROI %","Annualized ROI %","Days Held","Sale Price","Sale Date","Alert Status","Card Status","Price Source","Notes"];
+  var rows=cards.map(function(c){
+    var unreal=unrealizedGL(c);
+    var real=realizedGL(c);
+    var annROI=annualizedROI(c);
+    var days=daysHeld(c);
+    var roi=roiPct(c);
+    var marketVal=c.estimatedValue||c.lastSalePrice||"";
+    return csvRow([
+      c.playerName||"",c.year||"",c.brand||"",c.set||"",
+      c.gradingCompany||"",c.grade||"",c.certNumber||"",
+      c.bgsCenter||"",c.bgsCorners||"",c.bgsEdges||"",c.bgsSurface||"",
+      c.isRookie?"Yes":"No",c.isAuto?"Yes":"No",c.isPatch?"Yes":"No",c.isSerialNumbered?"Yes":"No",c.printRun||"",
+      c.purchasePrice||"",c.purchaseDate||"",c.wherePurchased||"",
+      c.lastSalePrice||"",c.lastSaleDate||"",
+      c.avg7day||"",c.count7day||"",
+      c.avg30day||"",c.count30day||"",
+      marketVal,
+      unreal?unreal.dollars.toFixed(2):"",unreal?unreal.pct.toFixed(1)+"%":"",
+      real?real.dollars.toFixed(2):"",real?real.pct.toFixed(1)+"%":"",
+      roi!=null?roi.toFixed(1)+"%":"",
+      annROI!=null?annROI.toFixed(1)+"%":"",
+      days||"",
+      c.salePrice||"",c.saleDate||"",
+      c.alertStatus||"normal",c.cardStatus||"inventory",
+      c.priceSource||"",c.notes||""
+    ]);
+  });
+  downloadCSV([headers.join(",")].concat(rows).join("\n"),"CardVault_Internal_"+new Date().toISOString().slice(0,10)+".csv");
+}
+
+// Buyer-facing export — clean presentation, no cost data
+function exportCSVBuyer(cards){
+  var now=new Date();
+  var cutoff=new Date(now.getTime()-90*24*60*60*1000); // 90 days ago
+  var active=cards.filter(function(c){return c.cardStatus==="inventory";});
+  var headers=["Player","Year","Brand","Set","Grading Co","Grade","Cert #","RC","Auto","Patch","Serial Numbered","Print Run","BGS Subgrades","Market Value","# Sales (90 Days)","Trend","Condition Notes"];
+  var rows=active.map(function(c){
+    // Market value — most recent data within 90 days
+    var mktVal="";
+    var saleCount="Insufficient data";
+    var hasSales=false;
+    if(c.lastSaleDate&&new Date(c.lastSaleDate)>=cutoff){
+      mktVal=c.estimatedValue||c.lastSalePrice||"";
+      hasSales=true;
+    }
+    if(c.count30day){saleCount=c.count30day+" (30 days)";}
+    else if(hasSales){saleCount="1";}
+    // Trend
+    var trend="—";
+    if(c.lastSalePrice&&c.purchasePrice){
+      var chg=((c.lastSalePrice-c.purchasePrice)/c.purchasePrice)*100;
+      trend=chg>5?"↑ Rising":chg<-5?"↓ Declining":"→ Stable";
+    }
+    // Condition notes
+    var condNotes="";
+    if(c.gradingCompany==="BGS"&&c.bgsCenter){
+      condNotes="BGS Subgrades: Centering "+c.bgsCenter+", Corners "+c.bgsCorners+", Edges "+c.bgsEdges+", Surface "+c.bgsSurface;
+    }else{
+      condNotes=c.gradingCompany+" "+c.grade+" — Straight Grade";
+    }
+    return csvRow([
+      c.playerName||"",c.year||"",c.brand||"",c.set||"",
+      c.gradingCompany||"",c.grade||"",c.certNumber||"",
+      c.isRookie?"Yes":"No",c.isAuto?"Yes":"No",c.isPatch?"Yes":"No",c.isSerialNumbered?"Yes":"No",c.printRun||"",
+      (c.gradingCompany==="BGS"&&c.bgsCenter)?c.bgsCenter+"/"+c.bgsCorners+"/"+c.bgsEdges+"/"+c.bgsSurface:"",
+      mktVal?"$"+parseFloat(mktVal).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"Insufficient data",
+      saleCount,trend,condNotes
+    ]);
+  });
+  downloadCSV([headers.join(",")].concat(rows).join("\n"),"CardVault_Buyer_"+new Date().toISOString().slice(0,10)+".csv");
+}
+
+// Legacy alias
+function exportCSV(cards){exportCSVInternal(cards);}
+
+// ── Design tokens ──
+var C={gold:"#2d6a3f",goldBg:"rgba(45,106,63,0.1)",green:"#1e6b3a",red:"#c0392b",amber:"#d68910",text:"#1a1a1a",muted:"#6b7d65",border:"#ccd8c4",bg:"#f0f4ee",card:"#fff",surface:"#e8ede3"};
+var INP={padding:"9px 11px",background:C.surface,border:"1px solid "+C.border,borderRadius:7,color:C.text,fontSize:14,width:"100%",outline:"none"};
+var BG={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:C.gold,color:"#fff",display:"inline-flex",alignItems:"center",gap:6};
+var BO={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",background:"transparent",border:"1px solid "+C.border,color:C.muted,display:"inline-flex",alignItems:"center",gap:6};
+var BD={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",background:"#fdecea",border:"1px solid #f5a0a0",color:C.red,display:"inline-flex",alignItems:"center",gap:6};
+var LBL={fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:C.muted,display:"block",marginBottom:5};
+function HR(){return <hr style={{border:"none",borderTop:"1px solid "+C.border,margin:"14px 0"}}/>;}
+function Sec(p){return <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>{p.t}</div>;}
+function Inp(p){return <input style={INP} {...p}/>;}
+function Sel(p){var ch=p.children;var rest=Object.assign({},p);delete rest.children;return <select style={INP} {...rest}>{ch}</select>;}
+function Fld(p){return <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:p.s2?"span 2":undefined}}><span style={LBL}>{p.l}</span>{p.children}</div>;}
+
+function HoldBadge(p){
+  var sig=p.sig;
+  var cfg={sell:{bg:"#22c55e",color:"#fff",label:"SELL"},watch:{bg:C.amber,color:"#fff",label:"WATCH"},hold:{bg:"#60a5fa",color:"#fff",label:"HOLD"},underwater:{bg:C.red,color:"#fff",label:"UNDERWATER"},unknown:{bg:C.muted,color:"#fff",label:"NO DATA"}};
+  var s=cfg[sig]||cfg.unknown;
+  return <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:s.bg,color:s.color,letterSpacing:.5}}>{s.label}</span>;
+}
+
+// ════════════ SETUP SCREEN ════════════
+function SetupScreen(p){
+  var onSave=p.onSave;
+  var [key,setKey]=useState("");
+  var [err,setErr]=useState("");
+  var [busy,setBusy]=useState(false);
+  var [sbUrl,setSbUrl]=useState(localStorage.getItem("cv_sb_url")||"");
+  var [sbKey,setSbKey]=useState(localStorage.getItem("cv_sb_key")||"");
+
+  async function handleSave(){
+    if(!key.trim()){setErr("Please paste your Anthropic API key");return;}
+    if(!key.trim().startsWith("sk-ant-")){setErr("Key should start with sk-ant-");return;}
+    if(!sbUrl.trim()||!sbKey.trim()){setErr("Please enter your Supabase URL and anon key so your data syncs across devices.");return;}
+    setBusy(true);setErr("");
+    try{
+      await apiCall(key.trim(),[{role:"user",content:"Say OK"}],false);
+      // Test Supabase
+      await testSupabase(sbUrl.trim(),sbKey.trim());
+      localStorage.setItem("cv_sb_url",sbUrl.trim());
+      localStorage.setItem("cv_sb_key",sbKey.trim());
+      onSave(key.trim());
+    }catch(e){setErr("Connection failed: "+e.message+" — check your keys and try again.");}
+    setBusy(false);
+  }
+  return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:24,background:C.bg}}>
+      <div style={{width:"100%",maxWidth:480}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:11,fontWeight:700,letterSpacing:6,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Dad &amp; Lad's</div>
+          <div style={{fontSize:36,fontWeight:800,color:C.text,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:4}}>CARD VAULT</div>
+          <div style={{fontSize:13,color:C.muted,marginTop:8}}>One-time setup — takes 2 minutes</div>
+        </div>
+        <div style={{background:C.card,borderRadius:14,padding:24,border:"1px solid "+C.border}}>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>One-Time Setup</div>
+          <div style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.7}}>
+            Enter your API keys once — your inventory syncs across all devices automatically.
+          </div>
+          <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Anthropic — Powers Photo ID &amp; Price Search</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>Get from <strong style={{color:C.text}}>console.anthropic.com</strong> → API Keys → Create Key</div>
+            <Fld l="Anthropic API Key"><Inp type="password" value={key} onChange={function(e){setKey(e.target.value);}} placeholder="sk-ant-api03-..."/></Fld>
+          </div>
+          <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Supabase — Syncs Inventory Across All Devices</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>Get from <strong style={{color:C.text}}>supabase.com</strong> → your project → Settings → API</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <Fld l="Project URL"><Inp type="text" value={sbUrl} onChange={function(e){setSbUrl(e.target.value);}} placeholder="https://xxxxxxxxxxxx.supabase.co"/></Fld>
+              <Fld l="Anon Public Key"><Inp type="password" value={sbKey} onChange={function(e){setSbKey(e.target.value);}} placeholder="eyJh..."/></Fld>
+            </div>
+          </div>
+          {err&&<div style={{marginTop:10,padding:"8px 12px",background:"#fdecea",borderRadius:6,fontSize:12,color:C.red}}>{err}</div>}
+          <button style={{...BG,width:"100%",justifyContent:"center",marginTop:16}} onClick={handleSave} disabled={busy}>{busy?"Testing connections…":"Save & Get Started →"}</button>
+        </div>
+        <div style={{textAlign:"center",fontSize:11,color:C.muted,marginTop:14}}>Stored only on this device. ~$0.10 per 100 card photos.</div>
+      </div>
+    </div>
+  );
+}
+
+// ════════════ PROFILE SCREEN ════════════
+function ProfileScreen(p){
+  var counts=p.counts,onSelect=p.onSelect,onSettings=p.onSettings;
+  return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:36,padding:32,background:C.bg}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+          <img src={LOGO_B64} alt="Dad and Lad's Sports" style={{width:120,height:120,borderRadius:14,objectFit:"cover",boxShadow:"0 4px 16px rgba(0,0,0,0.12)"}}/>
+        </div>
+        <div style={{fontSize:38,fontWeight:800,letterSpacing:4,color:C.text,fontFamily:"'Barlow Condensed',sans-serif"}}>CARD VAULT</div>
+        <div style={{fontSize:12,letterSpacing:4,textTransform:"uppercase",color:C.muted,marginTop:6}}>Graded Card Inventory</div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,letterSpacing:2,textTransform:"uppercase"}}>Whose collection?</div>
+      <div style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center"}}>
+        {[{key:"dad",name:"Dad"},{key:"owen",name:"Lad"}].map(function(pr){
+          return(
+            <div key={pr.key} onClick={function(){onSelect(pr.key);}} style={{width:170,height:200,border:"1.5px solid "+C.border,borderRadius:14,background:C.card,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:12,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{width:64,height:64,borderRadius:"50%",background:C.goldBg,border:"1.5px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,fontWeight:800,color:C.gold}}>{pr.name[0]}</div>
+              <div style={{fontSize:22,fontWeight:800,color:C.text}}>{pr.name}</div>
+              <div style={{fontSize:11,color:C.muted}}>{counts[pr.key].inventory} in inventory{counts[pr.key].sold>0?" · "+counts[pr.key].sold+" sold":""}</div>
+            </div>
+          );
+        })}
+      </div>
+      <button onClick={onSettings} style={{...BO,fontSize:12,padding:"8px 16px"}}>⚙ Settings</button>
+    </div>
+  );
+}
+
+// ════════════ NAV ════════════
+function Nav(p){
+  var profile=p.profile,mode=p.mode,view=p.view,onMode=p.onMode,onView=p.onView,onSwitch=p.onSwitch;
+  var name=profile==="dad"?"Dad":"Lad";
+  var other=profile==="dad"?"Lad":"Dad";
+  return(
+    <div style={{background:C.card,borderBottom:"1px solid "+C.border,position:"sticky",top:0,zIndex:20,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{display:"flex",alignItems:"center",padding:"0 8px",height:52,gap:5,overflowX:"auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+          <img src={LOGO_B64} alt="Dad and Lad's" style={{width:30,height:30,borderRadius:4,objectFit:"cover"}}/>
+          <div style={{fontSize:14,fontWeight:800,color:C.gold,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:2,flexShrink:0}}>VAULT</div>
+        </div>
+        <button onClick={function(){onView("dashboard");}} style={{padding:"4px 8px",borderRadius:6,fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:view==="dashboard"?"1px solid "+C.gold:"1px solid transparent",background:view==="dashboard"?C.goldBg:"transparent",color:view==="dashboard"?C.gold:C.muted,whiteSpace:"nowrap",flexShrink:0}}>Home</button>
+        <div style={{display:"flex",border:"1px solid "+C.border,borderRadius:7,overflow:"hidden",flexShrink:0}}>
+          {["buy","sell"].map(function(m){return(
+            <button key={m} onClick={function(){onMode(m);}} style={{padding:"4px 8px",fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:"none",background:mode===m?(m==="buy"?"#e8f5ee":"#fdecea"):"transparent",color:mode===m?(m==="buy"?C.green:C.red):C.muted}}>{m}</button>
+          );})}
+        </div>
+        <div style={{display:"flex",gap:2,flex:1,overflowX:"auto",flexShrink:1}}>
+          {[["inventory","My Cards"],["sell_rank","Sell Now"],["watchlist","Watchlist"],["browse",other+"'s"]].map(function(item){
+            var v=item[0],l=item[1];
+            return(
+              <button key={v} onClick={function(){onView(v);}} style={{padding:"4px 8px",borderRadius:6,fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:view===v?"1px solid "+C.gold:"1px solid transparent",background:view===v?C.goldBg:"transparent",color:view===v?C.gold:C.muted,whiteSpace:"nowrap",flexShrink:0}}>
+                {l}
+              </button>
+            );
+          })}
+        </div>
+        <div onClick={onSwitch} style={{display:"flex",alignItems:"center",gap:5,padding:"4px 8px",border:"1px solid "+C.border,borderRadius:7,cursor:"pointer",background:C.surface,flexShrink:0}}>
+          <div style={{width:20,height:20,borderRadius:"50%",background:C.goldBg,border:"1px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:C.gold}}>{name[0]}</div>
+          <span style={{fontSize:11,fontWeight:600,color:C.text}}>{name}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+}
+
+// ════════ DASHBOARD ════════
+function Dashboard(p){
+  var cards=p.cards,mode=p.mode,onRefresh=p.onRefresh,onAdd=p.onAdd,refreshing=p.refreshing,prog=p.prog,lastRefresh=p.lastRefresh,onExport=p.onExport;
+  var active=cards.filter(function(x){return x.cardStatus==="inventory";});
+  var sold=cards.filter(function(x){return x.cardStatus==="sold";});
+  var cost=active.reduce(function(s,x){return s+(parseFloat(x.purchasePrice)||0);},0);
+  var val=active.reduce(function(s,x){return s+(parseFloat(x.estimatedValue||x.lastSalePrice||x.purchasePrice)||0);},0);
+  var unrealDollars=active.reduce(function(s,x){var u=unrealizedGL(x);return s+(u?u.dollars:0);},0);
+  var unrealPct=cost>0?unrealDollars/cost*100:null;
+  var realDollars=sold.reduce(function(s,x){var r=realizedGL(x);return s+(r?r.dollars:0);},0);
+  var realCost=sold.reduce(function(s,x){return s+(parseFloat(x.purchasePrice)||0);},0);
+  var realPct=realCost>0?realDollars/realCost*100:null;
+  var alerts=active.filter(function(x){return x.alertStatus!=="normal";});
+  var sellNow=active.filter(function(x){return holdSignal(x)==="sell";});
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+        {[["In Inventory",active.length,C.gold],["Cost Basis",fmtMoney(cost),C.text],["Est. Value",fmtMoney(val),C.text],["Unrealized G/L",fmtMoney(unrealDollars)+" "+fmtPct(unrealPct),unrealDollars>=0?C.green:C.red],["Realized G/L",fmtMoney(realDollars)+" "+fmtPct(realPct),realDollars>=0?C.green:C.red],["Ready to Sell",sellNow.length,sellNow.length>0?C.green:C.text]].map(function(item){
+          var l=item[0],v=item[1],c=item[2];
+          return(<div key={l} style={{background:C.card,borderRadius:10,padding:"12px 14px",border:"1px solid "+C.border}}><div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:6}}>{l}</div><div style={{fontSize:18,fontWeight:800,color:c,lineHeight:1}}>{v}</div></div>);
+        })}
+      </div>
+      <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>🔄 Morning Price Refresh</div>
+        <div style={{fontSize:12,color:C.muted,marginBottom:12}}>
+          {refreshing?"Checking "+prog.card+"… ("+prog.current+"/"+prog.total+")":lastRefresh?"Last run: "+lastRefresh:"Checks eBay sold listings for all "+active.length+" active cards"}
+        </div>
+        {refreshing&&<div style={{height:4,background:C.border,borderRadius:2,marginBottom:12,overflow:"hidden"}}><div style={{height:"100%",background:C.gold,width:(prog.total?prog.current/prog.total*100:0)+"%",transition:"width .3s"}}></div></div>}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button style={{...BO,borderColor:mode==="sell"?C.red:C.border,color:mode==="sell"?C.red:C.muted}} onClick={onAdd}>{mode==="sell"?"− Sell Card":"+ Add Card"}</button>
+          <button style={{...BG,opacity:refreshing||!active.length?0.4:1}} onClick={onRefresh} disabled={refreshing||!active.length}>{refreshing?"Running…":"Run Refresh"}</button>
+          <button style={BO} onClick={function(){onExport("internal");}}>⬇ Internal Report</button>
+          <button style={BO} onClick={function(){onExport("buyer");}}>📋 Buyer Report</button>
+        </div>
+      </div>
+      {alerts.length>0&&(
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:C.muted,marginBottom:12}}>Price Alerts</div>
+          {alerts.map(function(x){
+            var pct=x.purchasePrice&&x.lastSalePrice?(x.lastSalePrice-x.purchasePrice)/x.purchasePrice*100:null;
+            var urg=x.alertStatus==="urgent_sale";
+            return(
+              <div key={x.id} style={{background:C.card,border:"1px solid "+(urg?C.red:C.amber),borderRadius:10,padding:"14px 16px",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:3,background:urg?C.red:C.amber,color:"#fff",display:"inline-block",marginBottom:6,letterSpacing:1}}>{urg?"URGENT SALE":"TIME TO SELL"}</div>
+                  <div style={{fontSize:16,fontWeight:800}}>{x.playerName}</div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:2}}>{x.year} {x.brand} {x.set} · {x.gradingCompany} {x.grade}</div>
+                  <div style={{fontSize:11,color:C.muted,marginTop:4}}>Cost {fmtMoney(x.purchasePrice)} → Last {fmtMoney(x.lastSalePrice)}</div>
+                </div>
+                <div style={{fontSize:26,fontWeight:800,color:urg?C.red:C.amber,marginLeft:16}}>{fmtPct(pct)}</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {alerts.length===0&&active.length>0&&<div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>📊</div><div style={{fontWeight:700,fontSize:15,marginBottom:4}}>No price alerts</div><div style={{fontSize:12}}>Run a refresh to check for price movements</div></div>}
+      {active.length===0&&<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:32,marginBottom:12}}>🃏</div><div style={{fontWeight:700,fontSize:16,marginBottom:16}}>No cards yet</div><button style={BG} onClick={onAdd}>+ Add Your First Card</button></div>}
+    </div>
+  );
+}
+
+// ════════ SELL RANK VIEW ════════
+function SellRankView(p){
+  var cards=p.cards,onView=p.onView;
+  var active=cards.filter(function(x){return x.cardStatus==="inventory";});
+  var ranked=active.filter(function(x){return x.purchasePrice;}).map(function(x){
+    var roi=roiPct(x);
+    var hvs=holdSignal(x);
+    var score=sellScore(x);
+    return Object.assign({},x,{_score:score,_roi:roi,_hvs:hvs});
+  }).sort(function(a,b){return b._score-a._score;});
+  var topSell=ranked.filter(function(x){return x._hvs==="sell";});
+  var watch=ranked.filter(function(x){return x._hvs==="watch";});
+  var hold=ranked.filter(function(x){return x._hvs==="hold";});
+  var underwater=ranked.filter(function(x){return x._hvs==="underwater";});
+  var unknown=ranked.filter(function(x){return x._hvs==="unknown";});
+  function CardRow(rp){
+    var x=rp.card;
+    var gain=x.purchasePrice&&x.lastSalePrice?x.lastSalePrice-x.purchasePrice:null;
+    return(
+      <div style={{background:C.card,borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid "+C.border}}>
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><HoldBadge card={x}/>{x.alertStatus!=="normal"&&<span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:3,background:x.alertStatus==="urgent_sale"?C.red:C.amber,color:"#fff"}}>{x.alertStatus==="urgent_sale"?"URGENT":"ALERT"}</span>}</div>
+          <div style={{fontSize:15,fontWeight:800,color:C.text}}>{x.playerName}</div>
+          <div style={{fontSize:11,color:C.muted}}>{x.year} {x.brand} {x.set} · {x.gradingCompany} {x.grade}</div>
+          <div style={{fontSize:11,color:C.muted,marginTop:3}}>Cost {fmtMoney(x.purchasePrice)} · Last {fmtMoney(x.lastSalePrice)}{gain!=null&&<span style={{color:gain>=0?C.green:C.red,fontWeight:700}}> · {gain>=0?"+":""}{fmtMoney(gain)} ({fmtPct(x._roi)})</span>}</div>
+        </div>
+        <button onClick={function(){onView(x);}} style={{...BO,padding:"5px 12px",fontSize:11,flexShrink:0,marginLeft:10}}>View</button>
+      </div>
+    );
+  }
+  function Section(sp){
+    if(!sp.cards||!sp.cards.length)return null;
+    return(<div style={{marginBottom:20}}><div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:C.muted,marginBottom:10}}>{sp.title} ({sp.cards.length})</div>{sp.cards.map(function(x){return <CardRow key={x.id} card={x}/>;})}</div>);
+  }
+  if(!active.length)return<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>📋</div><div style={{fontWeight:700}}>No cards in inventory</div></div>;
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{background:C.card,borderRadius:12,padding:"14px 18px",marginBottom:20,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>🎯 Sell Recommendation Engine</div>
+        <div style={{fontSize:12,color:C.muted}}>Cards ranked by ROI, alert status, and margin. Run a price refresh first for best results.</div>
+      </div>
+      <Section title="🟢 Sell Now" cards={topSell}/>
+      <Section title="⚡ Consider Selling" cards={watch}/>
+      <Section title="⏳ Hold" cards={hold}/>
+      <Section title="🔴 Underwater" cards={underwater}/>
+      <Section title="❓ No Price Data" cards={unknown}/>
+    </div>
+  );
+}
+
+// ════════ WATCHLIST ════════
+function WatchlistView(p){
+  var apiKey=p.apiKey,watchlist=p.watchlist,setWatchlist=p.setWatchlist,toast=p.toast;
+  var [query,setQuery]=useState("");
+  var [targetPrice,setTargetPrice]=useState("");
+  var [checking,setChecking]=useState(null);
+  function addItem(){
+    if(!query.trim()){toast("Enter a card to watch","error");return;}
+    var item={id:uid(),query:query.trim(),targetPrice:parseFloat(targetPrice)||null,addedDate:new Date().toISOString().slice(0,10),lastSalePrice:null,lastSaleDate:null,avgRecentPrice:null,lowestAsk:null,verdict:null,verdictReason:null,lastChecked:null};
+    var updated=watchlist.concat([item]);
+    setWatchlist(updated);lsSet("cv_watchlist",JSON.stringify(updated));
+    setQuery("");setTargetPrice("");toast("Added to watchlist","success");
+  }
+  async function checkItem(id){
+    var item=watchlist.find(function(x){return x.id===id;});
+    if(!item)return;setChecking(id);
+    try{
+      var result=await lookupWatchlistCard(apiKey,item.query);
+      if(result){
+        var updated=watchlist.map(function(x){return x.id===id?Object.assign({},x,result,{lastChecked:new Date().toISOString().slice(0,10)}):x;});
+        setWatchlist(updated);lsSet("cv_watchlist",JSON.stringify(updated));
+        toast("Updated: "+item.query,"success");
+      }else{toast("No data found","error");}
+    }catch(e){toast("Error: "+e.message,"error");}
+    setChecking(null);
+  }
+  async function checkAll(){for(var i=0;i<watchlist.length;i++){await checkItem(watchlist[i].id);}}
+  function removeItem(id){var updated=watchlist.filter(function(x){return x.id!==id;});setWatchlist(updated);lsSet("cv_watchlist",JSON.stringify(updated));}
+  var vColors={good_buy:{bg:"#e8f5ee",color:C.green,label:"✅ Good Buy"},fair:{bg:"#fff8ee",color:C.amber,label:"⚡ Fair"},overpriced:{bg:"#fdecea",color:C.red,label:"❌ Overpriced"},unknown:{bg:C.surface,color:C.muted,label:"— Unknown"}};
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:12}}>👀 Add Card to Watchlist</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          <Fld l="Card description" s2={true}><Inp value={query} onChange={function(e){setQuery(e.target.value);}} placeholder="e.g. 2023 Panini Prizm Mahomes PSA 10"/></Fld>
+          <Fld l="Target Buy Price"><Inp type="number" step="0.01" value={targetPrice} onChange={function(e){setTargetPrice(e.target.value);}} placeholder="e.g. 150.00"/></Fld>
+          <div style={{display:"flex",gap:8,alignItems:"flex-end"}}>
+            <button style={BG} onClick={addItem}>+ Add to Watchlist</button>
+            {watchlist.length>0&&<button style={BO} onClick={checkAll}>🔄 Check All</button>}
+          </div>
+        </div>
+      </div>
+      {watchlist.length===0&&<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>👀</div><div style={{fontWeight:700,marginBottom:6}}>No cards on watchlist</div><div style={{fontSize:12}}>Add cards you're thinking about buying</div></div>}
+      {watchlist.map(function(item){
+        var vc=vColors[item.verdict]||vColors.unknown;
+        var isBelowTarget=item.targetPrice&&item.lastSalePrice&&item.lastSalePrice<=item.targetPrice;
+        return(
+          <div key={item.id} style={{background:C.card,borderRadius:12,padding:"14px 16px",marginBottom:10,border:"1px solid "+(isBelowTarget?C.green:C.border)}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div style={{flex:1}}>
+                {isBelowTarget&&<div style={{fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:3,background:C.green,color:"#fff",display:"inline-block",marginBottom:6,letterSpacing:1}}>🎯 AT OR BELOW TARGET</div>}
+                <div style={{fontSize:15,fontWeight:800,color:C.text}}>{item.query}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:2}}>Added {fmtDate(item.addedDate)}{item.lastChecked?" · Checked "+fmtDate(item.lastChecked):""}</div>
+              </div>
+              <div style={{display:"flex",gap:8,flexShrink:0,marginLeft:10}}>
+                <button onClick={function(){checkItem(item.id);}} disabled={checking===item.id} style={{...BO,padding:"5px 10px",fontSize:11}}>{checking===item.id?"…":"🔄"}</button>
+                <button onClick={function(){removeItem(item.id);}} style={{...BD,padding:"5px 10px",fontSize:11}}>✕</button>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8}}>
+              {[["Last Sale",fmtMoney(item.lastSalePrice)],["Avg Recent",fmtMoney(item.avgRecentPrice)],["Lowest Ask",fmtMoney(item.lowestAsk)],["Your Target",fmtMoney(item.targetPrice)]].map(function(it){
+                return(<div key={it[0]} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:9,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:C.muted,marginBottom:4}}>{it[0]}</div><div style={{fontSize:15,fontWeight:800,color:C.text}}>{it[1]}</div></div>);
+              })}
+            </div>
+            {item.verdict&&<div style={{marginTop:10,padding:"8px 12px",borderRadius:8,background:vc.bg,display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:11,fontWeight:700,color:vc.color}}>{vc.label}</span>{item.verdictReason&&<span style={{fontSize:11,color:C.muted}}>— {item.verdictReason}</span>}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ════════ INVENTORY VIEW ════════
+function InventoryView(p){
+  var cards=p.cards,onAdd=p.onAdd,onSell=p.onSell,onView=p.onView;
+  var mode=p.mode,readOnly=p.readOnly,ownerName=p.ownerName;
+  var search=p.search,setSearch=p.setSearch,fAlert=p.fAlert,setFAlert=p.setFAlert,fStatus=p.fStatus,setFStatus=p.setFStatus;
+  var onBulkSave=p.onBulkSave;
+  var [showFilters,setShowFilters]=useState(false);
+  var [fSport,setFSport]=useState("all");
+  var [fGradeCo,setFGradeCo]=useState("all");
+  var [fGrade,setFGrade]=useState("all");
+  var [fBrand,setFBrand]=useState("all");
+  var [fRookie,setFRookie]=useState("all");
+  var [fAuto,setFAuto]=useState("all");
+  var [fPatch,setFPatch]=useState("all");
+  var [fMinPrice,setFMinPrice]=useState("");
+  var [fMaxPrice,setFMaxPrice]=useState("");
+  var [fMinLastSale,setFMinLastSale]=useState("");
+  var [fMaxLastSale,setFMaxLastSale]=useState("");
+  var [sortField,setSortField]=useState("playerName");
+  var [sortDir,setSortDir]=useState("asc");
+  var [bulkMode,setBulkMode]=useState(false);
+  var [bulkPrices,setBulkPrices]=useState({});
+  var [bulkDates,setBulkDates]=useState({});
+  var allGrades=useMemo(function(){var s=new Set();cards.forEach(function(c){if(c.grade)s.add(c.grade);});return Array.from(s).sort(function(a,b){return parseFloat(b)-parseFloat(a);});;},[cards]);
+  var allBrands=useMemo(function(){var s=new Set();cards.forEach(function(c){if(c.brand)s.add(c.brand);});return Array.from(s).sort();},[cards]);
+  var allSports=useMemo(function(){var s=new Set();cards.forEach(function(c){if(c.sport)s.add(c.sport);});return Array.from(s).sort();},[cards]);
+  var activeFilterCount=[fSport,fGradeCo,fGrade,fBrand,fRookie,fAuto,fPatch].filter(function(v){return v!=="all";}).length+(fMinPrice?1:0)+(fMaxPrice?1:0)+(fMinLastSale?1:0)+(fMaxLastSale?1:0)+(fAlert!=="all"?1:0)+(fStatus!=="all"?1:0);
+  function clearFilters(){setFSport("all");setFGradeCo("all");setFGrade("all");setFBrand("all");setFRookie("all");setFAuto("all");setFPatch("all");setFMinPrice("");setFMaxPrice("");setFMinLastSale("");setFMaxLastSale("");setFAlert("all");setFStatus("all");setSearch("");}
+  var rows=useMemo(function(){
+    var r=cards.slice();
+    if(search){var q=search.toLowerCase();r=r.filter(function(x){return(x.playerName||"").toLowerCase().includes(q)||(x.year||"").toString().includes(q)||(x.brand||"").toLowerCase().includes(q)||(x.set||"").toLowerCase().includes(q)||(x.certNumber||"").toLowerCase().includes(q)||(x.sport||"").toLowerCase().includes(q);});}
+    if(fAlert!=="all")r=r.filter(function(x){return x.alertStatus===fAlert;});
+    if(fStatus!=="all")r=r.filter(function(x){return x.cardStatus===fStatus;});
+    if(fSport!=="all")r=r.filter(function(x){return(x.sport||"").toLowerCase()===(fSport||"").toLowerCase();});
+    if(fGradeCo!=="all")r=r.filter(function(x){return x.gradingCompany===fGradeCo;});
+    if(fGrade!=="all")r=r.filter(function(x){return x.grade===fGrade;});
+    if(fBrand!=="all")r=r.filter(function(x){return x.brand===fBrand;});
+    if(fRookie!=="all")r=r.filter(function(x){return fRookie==="yes"?!!x.isRookie:!x.isRookie;});
+    if(fAuto!=="all")r=r.filter(function(x){return fAuto==="yes"?!!x.isAuto:!x.isAuto;});
+    if(fPatch!=="all")r=r.filter(function(x){return fPatch==="yes"?!!x.isPatch:!x.isPatch;});
+    if(fMinPrice)r=r.filter(function(x){return parseFloat(x.purchasePrice||0)>=parseFloat(fMinPrice);});
+    if(fMaxPrice)r=r.filter(function(x){return parseFloat(x.purchasePrice||0)<=parseFloat(fMaxPrice);});
+    if(fMinLastSale)r=r.filter(function(x){return x.lastSalePrice&&parseFloat(x.lastSalePrice)>=parseFloat(fMinLastSale);});
+    if(fMaxLastSale)r=r.filter(function(x){return x.lastSalePrice&&parseFloat(x.lastSalePrice)<=parseFloat(fMaxLastSale);});
+    r.sort(function(a,b){
+      var av,bv;
+      if(sortField==="purchasePrice"||sortField==="lastSalePrice"){av=parseFloat(a[sortField]||0);bv=parseFloat(b[sortField]||0);}
+      else if(sortField==="grade"){av=parseFloat(a.grade||0);bv=parseFloat(b.grade||0);}
+      else{av=(a[sortField]||"").toLowerCase();bv=(b[sortField]||"").toLowerCase();}
+      if(av<bv)return sortDir==="asc"?-1:1;
+      if(av>bv)return sortDir==="asc"?1:-1;
+      return 0;
+    });
+    return r;
+  },[cards,search,fAlert,fStatus,fSport,fGradeCo,fGrade,fBrand,fRookie,fAuto,fPatch,fMinPrice,fMaxPrice,fMinLastSale,fMaxLastSale,sortField,sortDir]);
+  function SortBtn(sp){
+    var active=sortField===sp.field;
+    return <button onClick={function(){if(active)setSortDir(function(d){return d==="asc"?"desc":"asc";});else{setSortField(sp.field);setSortDir("asc");}}} style={{padding:"3px 8px",fontSize:10,fontWeight:700,cursor:"pointer",border:"1px solid "+(active?C.gold:C.border),borderRadius:4,background:active?C.goldBg:"transparent",color:active?C.gold:C.muted,display:"inline-flex",alignItems:"center",gap:3}}>{sp.label}{active?(sortDir==="asc"?" ↑":" ↓"):""}</button>;
+  }
+  function saveBulkPrices(){
+    var updates={};
+    Object.keys(bulkPrices).forEach(function(id){if(bulkPrices[id])updates[id]={lastSalePrice:parseFloat(bulkPrices[id]),lastSaleDate:bulkDates[id]||new Date().toISOString().slice(0,10)};});
+    onBulkSave(updates);setBulkPrices({});setBulkDates({});setBulkMode(false);
+  }
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      {readOnly&&<div style={{background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.amber,marginBottom:14,textAlign:"center",fontWeight:600}}>👁 Viewing {ownerName}'s collection — read only</div>}
+      <div style={{display:"flex",gap:10,marginBottom:10}}>
+        <input style={{...INP,flex:1}} placeholder="Search player, year, brand, set, cert #…" value={search} onChange={function(e){setSearch(e.target.value);}}/>
+        <button onClick={function(){setShowFilters(function(v){return !v;});}} style={{padding:"9px 14px",borderRadius:7,fontSize:12,fontWeight:700,cursor:"pointer",border:"1px solid "+(activeFilterCount>0?C.gold:C.border),background:activeFilterCount>0?C.goldBg:"transparent",color:activeFilterCount>0?C.gold:C.muted,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:6}}>
+          🔽 Filters{activeFilterCount>0?" ("+activeFilterCount+")":""}
+        </button>
+        {activeFilterCount>0&&<button onClick={clearFilters} style={{padding:"9px 12px",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer",border:"1px solid "+C.border,background:"transparent",color:C.red,whiteSpace:"nowrap"}}>✕ Clear</button>}
+      </div>
+      {showFilters&&(
+        <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:10,padding:"16px",marginBottom:14}}>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:12}}>Filter By</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10,marginBottom:14}}>
+            <div><div style={LBL}>Alert</div><select style={INP} value={fAlert} onChange={function(e){setFAlert(e.target.value);}}><option value="all">All alerts</option><option value="normal">Normal</option><option value="time_to_sell">Time to Sell</option><option value="urgent_sale">Urgent Sale</option></select></div>
+            <div><div style={LBL}>Status</div><select style={INP} value={fStatus} onChange={function(e){setFStatus(e.target.value);}}><option value="all">All status</option><option value="inventory">In Inventory</option><option value="sold">Sold</option><option value="consigned">Consigned</option><option value="grading">Grading</option></select></div>
+            <div><div style={LBL}>Grading Co.</div><select style={INP} value={fGradeCo} onChange={function(e){setFGradeCo(e.target.value);}}><option value="all">All</option>{["PSA","BGS","SGC","CGC"].map(function(g){return <option key={g}>{g}</option>;})}</select></div>
+            <div><div style={LBL}>Grade</div><select style={INP} value={fGrade} onChange={function(e){setFGrade(e.target.value);}}><option value="all">All grades</option>{allGrades.map(function(g){return <option key={g}>{g}</option>;})}</select></div>
+            <div><div style={LBL}>Brand</div><select style={INP} value={fBrand} onChange={function(e){setFBrand(e.target.value);}}><option value="all">All brands</option>{allBrands.map(function(b){return <option key={b}>{b}</option>;})}</select></div>
+            {allSports.length>0&&<div><div style={LBL}>Sport</div><select style={INP} value={fSport} onChange={function(e){setFSport(e.target.value);}}><option value="all">All sports</option>{allSports.map(function(s){return <option key={s}>{s}</option>;})}</select></div>}
+            <div><div style={LBL}>Rookie</div><select style={INP} value={fRookie} onChange={function(e){setFRookie(e.target.value);}}><option value="all">All</option><option value="yes">RC Only</option><option value="no">Non-RC</option></select></div>
+            <div><div style={LBL}>Auto</div><select style={INP} value={fAuto} onChange={function(e){setFAuto(e.target.value);}}><option value="all">All</option><option value="yes">Auto Only</option><option value="no">No Auto</option></select></div>
+            <div><div style={LBL}>Patch</div><select style={INP} value={fPatch} onChange={function(e){setFPatch(e.target.value);}}><option value="all">All</option><option value="yes">Patch Only</option><option value="no">No Patch</option></select></div>
+          </div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Price Range</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:10,marginBottom:14}}>
+            <div><div style={LBL}>Min Cost</div><input style={INP} type="number" step="1" placeholder="$ min" value={fMinPrice} onChange={function(e){setFMinPrice(e.target.value);}}/></div>
+            <div><div style={LBL}>Max Cost</div><input style={INP} type="number" step="1" placeholder="$ max" value={fMaxPrice} onChange={function(e){setFMaxPrice(e.target.value);}}/></div>
+            <div><div style={LBL}>Min Last Sale</div><input style={INP} type="number" step="1" placeholder="$ min" value={fMinLastSale} onChange={function(e){setFMinLastSale(e.target.value);}}/></div>
+            <div><div style={LBL}>Max Last Sale</div><input style={INP} type="number" step="1" placeholder="$ max" value={fMaxLastSale} onChange={function(e){setFMaxLastSale(e.target.value);}}/></div>
+          </div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Sort By</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {[["playerName","Player"],["year","Year"],["brand","Brand"],["gradingCompany","Grading Co"],["grade","Grade"],["purchasePrice","Cost"],["lastSalePrice","Last Sale"],["alertStatus","Alert"]].map(function(item){return <SortBtn key={item[0]} field={item[0]} label={item[1]}/>;}) }
+          </div>
+        </div>
+      )}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+        <div style={{fontSize:11,color:C.muted}}>{rows.length} of {cards.length} card{cards.length!==1?"s":""}{activeFilterCount>0?" (filtered)":""}</div>
+        {!readOnly&&(
+          <div style={{display:"flex",gap:8}}>
+            <button style={{...BG,padding:"8px 14px",fontSize:12,background:mode==="sell"?C.red:C.gold}} onClick={onAdd}>{mode==="sell"?"− Sell Card":"+ Add Card"}</button>
+            <button style={{...BO,padding:"8px 14px",fontSize:12,color:bulkMode?C.gold:C.muted,borderColor:bulkMode?C.gold:C.border}} onClick={function(){setBulkMode(function(v){return !v;});}}>✏ Bulk Price</button>
+          </div>
+        )}
+      </div>
+      {bulkMode&&!readOnly&&(
+        <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.gold}}>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Bulk Last Sale Update</div>
+          <div style={{fontSize:11,color:C.muted,marginBottom:14}}>Enter last sale prices for multiple cards. Leave blank to skip.</div>
+          {rows.filter(function(x){return x.cardStatus==="inventory";}).map(function(x){
+            return(
+              <div key={x.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:10,marginBottom:10,alignItems:"center"}}>
+                <div><div style={{fontSize:13,fontWeight:700}}>{x.playerName}</div><div style={{fontSize:10,color:C.muted}}>{x.gradingCompany} {x.grade} · Cost {fmtMoney(x.purchasePrice)}</div></div>
+                <Inp type="number" step="0.01" placeholder="Last sale $" value={bulkPrices[x.id]||""} onChange={function(e){var v=e.target.value;setBulkPrices(function(prev){var n=Object.assign({},prev);n[x.id]=v;return n;});}}/>
+                <Inp type="date" value={bulkDates[x.id]||new Date().toISOString().slice(0,10)} onChange={function(e){var v=e.target.value;setBulkDates(function(prev){var n=Object.assign({},prev);n[x.id]=v;return n;});}}/>
+              </div>
+            );
+          })}
+          <div style={{display:"flex",gap:10,marginTop:10}}>
+            <button style={BG} onClick={saveBulkPrices}>Save All Prices</button>
+            <button style={BO} onClick={function(){setBulkMode(false);setBulkPrices({});setBulkDates({});}}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {rows.length===0?(
+        <div style={{textAlign:"center",padding:48,color:C.muted}}>
+          <div style={{fontSize:32,marginBottom:12}}>🔍</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>{cards.length===0?"No cards yet":"No results"}</div>
+          {cards.length===0&&!readOnly&&<button style={BG} onClick={onAdd}>+ Add your first card</button>}
+        </div>
+      ):rows.map(function(x){
+        var pnl=x.purchasePrice&&(x.estimatedValue||x.lastSalePrice)?(x.estimatedValue||x.lastSalePrice)-x.purchasePrice:null;
+        var pnlPct=x.purchasePrice&&pnl!=null?pnl/x.purchasePrice*100:null;
+        var alertColor=x.alertStatus==="urgent_sale"?C.red:x.alertStatus==="time_to_sell"?C.amber:null;
+        return(
+          <div key={x.id} style={{background:C.card,border:"1px solid "+(alertColor||C.border),borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}><HoldBadge card={x}/>{alertColor&&<span style={{fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:3,background:alertColor,color:"#fff"}}>{x.alertStatus==="urgent_sale"?"URGENT":"ALERT"}</span>}</div>
+                <div style={{fontSize:17,fontWeight:800,color:C.text}}>{x.playerName||"—"}</div>
+                <div style={{fontSize:12,color:C.muted,marginTop:2}}>{x.year} {x.brand} · {x.set}</div>
+                {x.certNumber&&<div style={{fontSize:11,color:C.muted,opacity:.7,marginTop:1}}>Cert #{x.certNumber}</div>}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:4,background:C.surface,border:"1px solid "+C.border,borderRadius:5,padding:"3px 10px"}}>
+                  <span style={{fontSize:10,fontWeight:700,color:C.muted,letterSpacing:1}}>{x.gradingCompany}</span>
+                  <span style={{fontSize:20,fontWeight:800,color:C.gold}}>{x.grade}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
+              {x.isRookie&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#dbeafe",color:"#1d4ed8"}}>RC</span>}
+              {x.isAuto&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#f3e8ff",color:"#7c3aed"}}>AUTO</span>}
+              {x.isPatch&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:"#dcfce7",color:"#15803d"}}>PATCH</span>}
+              {x.isSerialNumbered&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:C.goldBg,color:C.gold}}>/{x.printRun}</span>}
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+              <div style={{fontSize:12,color:C.muted}}>
+                Cost <strong style={{color:C.text}}>{fmtMoney(x.purchasePrice)}</strong>
+                {x.lastSalePrice&&<span> · Last <strong style={{color:C.text}}>{fmtMoney(x.lastSalePrice)}</strong></span>}
+                {pnl!=null&&<span> · <strong style={{color:pnl>=0?C.green:C.red}}>{fmtMoney(pnl)} ({fmtPct(pnlPct)})</strong></span>}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={function(){onView(x);}} style={{...BO,padding:"6px 12px",fontSize:12}}>View</button>
+                {!readOnly&&x.cardStatus==="inventory"&&mode==="sell"&&<button onClick={function(){onSell(x);}} style={{...BD,padding:"6px 12px",fontSize:12}}>Sell</button>}
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:x.cardStatus==="inventory"?"#22c55e":x.cardStatus==="sold"?C.muted:x.cardStatus==="consigned"?"#60a5fa":C.amber}}></div>
+              <span style={{fontSize:11,color:C.muted}}>{STATUS_LBL[x.cardStatus||"inventory"]}{x.cardStatus==="sold"&&x.salePrice?" · Sold "+fmtMoney(x.salePrice):""}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ════════ CARD FORM ════════
+function CardForm(p){
+  var card=p.card,upd=p.upd;
+  var G={display:"grid",gridTemplateColumns:"1fr 1fr",gap:12};
+  return(
+    <div>
+      <Sec t="Card Identity"/>
+      <div style={G}>
+        <Fld l="Player Name *"><Inp value={card.playerName} onChange={function(e){upd("playerName",e.target.value);}} placeholder="e.g. Patrick Mahomes"/></Fld>
+        <Fld l="Year"><Inp value={card.year} onChange={function(e){upd("year",e.target.value);}} placeholder="e.g. 2019"/></Fld>
+        <Fld l="Brand"><Sel value={card.brand} onChange={function(e){upd("brand",e.target.value);}}><option value="">Select…</option>{BRANDS.map(function(b){return <option key={b}>{b}</option>;})}</Sel></Fld>
+        <Fld l="Set"><Inp value={card.set} onChange={function(e){upd("set",e.target.value);}} placeholder="e.g. Prizm, Chrome"/></Fld>
+      </div>
+      <HR/>
+      <Sec t="Attributes"/>
+      <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:12}}>
+        {[["isRookie","Rookie Card"],["isAuto","Auto"],["isPatch","Patch/Relic"],["isSerialNumbered","Serial Numbered"]].map(function(item){
+          var k=item[0],l=item[1];
+          return(<label key={k} style={{display:"flex",alignItems:"center",gap:7,fontSize:13,cursor:"pointer"}}><input type="checkbox" checked={!!card[k]} onChange={function(e){upd(k,e.target.checked);}} style={{accentColor:C.gold,width:15,height:15}}/>{l}</label>);
+        })}
+      </div>
+      {card.isSerialNumbered&&<div style={{marginBottom:12}}><Fld l="Print Run"><Inp type="number" value={card.printRun} onChange={function(e){upd("printRun",e.target.value);}} placeholder="e.g. 25" style={{maxWidth:130}}/></Fld></div>}
+      <HR/>
+      <Sec t="Grading"/>
+      <div style={G}>
+        <Fld l="Company *"><Sel value={card.gradingCompany} onChange={function(e){upd("gradingCompany",e.target.value);}}>{GCS.map(function(g){return <option key={g}>{g}</option>;})}</Sel></Fld>
+        <Fld l="Grade *"><Inp value={card.grade} onChange={function(e){upd("grade",e.target.value);}} placeholder="e.g. 10, 9.5"/></Fld>
+        <Fld l="Cert Number" s2={true}><Inp value={card.certNumber} onChange={function(e){upd("certNumber",e.target.value);}} placeholder="Cert #"/></Fld>
+      </div>
+      {card.gradingCompany==="BGS"&&<div style={{...G,marginTop:12}}>{[["bgsCenter","Centering"],["bgsCorners","Corners"],["bgsEdges","Edges"],["bgsSurface","Surface"]].map(function(item){var k=item[0],l=item[1];return <Fld key={k} l={"BGS "+l}><Inp value={card[k]} onChange={function(e){upd(k,e.target.value);}} placeholder="9.5"/></Fld>;})}</div>}
+      <HR/>
+      <Sec t="Financial"/>
+      <div style={G}>
+        <Fld l="Purchase Price"><Inp type="number" step="0.01" value={card.purchasePrice} onChange={function(e){upd("purchasePrice",e.target.value);}} placeholder="0.00"/></Fld>
+        <Fld l="Purchase Date"><Inp type="date" value={card.purchaseDate} onChange={function(e){upd("purchaseDate",e.target.value);}} /></Fld>
+        <Fld l="Where Purchased" s2={true}><Sel value={card.wherePurchased} onChange={function(e){upd("wherePurchased",e.target.value);}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+      </div>
+      <HR/>
+      <Fld l="Notes"><textarea style={{...INP,minHeight:60,resize:"vertical"}} value={card.notes} onChange={function(e){upd("notes",e.target.value);}} placeholder="Any notes…"/></Fld>
+    </div>
+  );
+}
+
+// ════════ CHECK DUPLICATES ════════
+function checkDuplicates(newCards,existingCards){
+  var results=[];
+  newCards.forEach(function(nc){
+    var ncCert=String(nc.certNumber||"").trim();
+    var match=existingCards.find(function(ec){
+      var ecCert=String(ec.certNumber||"").trim();
+      if(ncCert&&ecCert){return ncCert===ecCert;}
+      var nameMatch=String(nc.playerName||"").toLowerCase().trim()===String(ec.playerName||"").toLowerCase().trim();
+      var gradeMatch=String(nc.grade||"").trim()===String(ec.grade||"").trim();
+      var gcMatch=String(nc.gradingCompany||"").trim()===String(ec.gradingCompany||"").trim();
+      var yearMatch=String(nc.year||"").trim()===String(ec.year||"").trim();
+      var setMatch=!nc.set||!ec.set||String(nc.set||"").toLowerCase().trim()===String(ec.set||"").toLowerCase().trim();
+      return nameMatch&&gradeMatch&&gcMatch&&yearMatch&&setMatch;
+    })||null;
+    results.push({card:nc,existing:match,status:match?match.cardStatus||"inventory":null});
+  });
+  return results;
+}
+
+// ════════ ADD MODAL ════════
+function AddModal(p){
+  var apiKey=p.apiKey,mode=p.mode,myCards=p.myCards,onAdd=p.onAdd,onSellBulk=p.onSellBulk,onAddAndSell=p.onAddAndSell,onClose=p.onClose,toast=p.toast;
+  var [tab,setTab]=useState("photo");
+  var [img,setImg]=useState(null);
+  var [b64,setB64]=useState(null);
+  var [mime,setMime]=useState(null);
+  var [imgInfo,setImgInfo]=useState("");
+  var [busy,setBusy]=useState(false);
+  var [statusMsg,setStatusMsg]=useState("");
+  var [identified,setIdentified]=useState([]);
+  var [perCardInfo,setPerCardInfo]=useState([]);
+  var [dupWarnings,setDupWarnings]=useState([]);
+  var [dupConfirmed,setDupConfirmed]=useState({});
+  var [addAndSell,setAddAndSell]=useState({});
+  var [addAndSellInfo,setAddAndSellInfo]=useState({});
+  var [matched,setMatched]=useState([]);
+  var [form,setForm]=useState(Object.assign({},BLANK));
+  var [saleInfo,setSaleInfo]=useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var [selIds,setSelIds]=useState({});
+  var fileRef=useRef();
+  function upd(k,v){
+    setForm(function(prev){return Object.assign({},prev,{[k]:v});});
+    if(dupWarnings.length>0)setDupWarnings([]);
+  }
+  function handleFile(f){
+    if(!f)return;setStatusMsg("Compressing image…");
+    var r=new FileReader();
+    r.onload=async function(e){
+      var raw=e.target.result;setImg(raw);
+      try{
+        var c1=await compressImage(raw,900,0.78);
+        var fb=c1.b64,fw=c1.w,fh=c1.h,sz=Math.round(c1.b64.length*0.75/1024);
+        if(sz>350){var c2=await compressImage(raw,600,0.65);fb=c2.b64;fw=c2.w;fh=c2.h;sz=Math.round(c2.b64.length*0.75/1024);}
+        setB64(fb);setMime("image/jpeg");setImgInfo(fw+"×"+fh+"px · ~"+sz+"KB");setStatusMsg("Ready — tap Identify Cards");
+      }catch(err){setB64(raw.split(",")[1]);setMime(f.type||"image/jpeg");setStatusMsg("Ready — tap Identify Cards");}
+    };
+    r.readAsDataURL(f);
+  }
+  async function doIdentify(){
+    if(!b64)return;setBusy(true);setStatusMsg("Reading card labels…");
+    try{
+      var cards=await identifyCardsFromPhoto(apiKey,b64,mime);
+      if(!cards.length){setStatusMsg("No graded cards found — try a clearer photo");setBusy(false);return;}
+      setStatusMsg("Found "+cards.length+" card"+(cards.length!==1?"s":"")+"!");
+      if(mode==="sell"){
+        var m=cards.map(function(id){var match=myCards.find(function(c){if(c.cardStatus!=="inventory")return false;var ncCert=String(id.certNumber||"").trim();var ecCert=String(c.certNumber||"").trim();if(ncCert&&ecCert)return ncCert===ecCert;var a=(id.playerName||"").toLowerCase(),b=(c.playerName||"").toLowerCase();return a&&b&&(a.includes(b)||b.includes(a));})||null;return Object.assign({},id,{match:match});});
+        setMatched(m);var s={};m.forEach(function(x){if(x.match)s[x.match.id]=true;});setSelIds(s);
+      }else{
+        setIdentified(cards);
+        setPerCardInfo(cards.map(function(){return{purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:""};} ));
+        var dups=checkDuplicates(cards,myCards);setDupWarnings(dups);setDupConfirmed({});
+      }
+    }catch(e){setStatusMsg("Error: "+e.message);toast("Error: "+e.message,"error");}
+    setBusy(false);
+  }
+  async function doAddAll(){
+    var blocked=[];var toAdd=[];
+    identified.forEach(function(x,i){
+      var info=perCardInfo[i]||{};
+      var dup=dupWarnings[i];
+      if(dup&&dup.existing){
+        if(dup.status==="inventory"){blocked.push(x.playerName||"Card");return;}
+        if(dup.status==="sold"&&!dupConfirmed[x.certNumber||i])return;
+      }
+      toAdd.push(Object.assign({},BLANK,x,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null,purchasePrice:info.purchasePrice||"",purchaseDate:info.purchaseDate||new Date().toISOString().slice(0,10),wherePurchased:info.wherePurchased||""}));
+    });
+    if(blocked.length>0)toast(blocked.join(", ")+(blocked.length===1?" is":" are")+" already in inventory and skipped.","error");
+    if(toAdd.length>0){onAdd(toAdd);if(blocked.length===0)onClose();}
+  }
+  async function doSellMatched(){
+    var ids=Object.keys(selIds).filter(function(k){return selIds[k];});
+    var addSellCards=matched.filter(function(m){return !m.match&&addAndSell[m.playerName+m.grade];});
+    if(!ids.length&&!addSellCards.length){toast("Select at least one card","error");return;}
+    if(!saleInfo.price){toast("Enter a sale price","error");return;}
+    if(addSellCards.length>0){
+      var toAddFirst=addSellCards.map(function(m){
+        var info=addAndSellInfo[m.playerName+m.grade]||{};
+        return Object.assign({},BLANK,m,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null,purchasePrice:info.purchasePrice||"",purchaseDate:info.purchaseDate||new Date().toISOString().slice(0,10),wherePurchased:info.wherePurchased||""});
+      });
+      onAddAndSell(toAddFirst,saleInfo);
+    }
+    if(ids.length>0)onSellBulk(ids,saleInfo);
+    onClose();
+  }
+  async function doAddManual(){
+    if(!form.playerName||!form.grade){toast("Player name and grade required","error");return;}
+    var dups=checkDuplicates([form],myCards);var dup=dups[0];
+    if(dup.existing){
+      if(dup.status==="inventory"){toast("This card is already in your active inventory.","error");return;}
+      if(dup.status==="sold"&&!dupConfirmed["manual"]){setDupWarnings([dup]);setDupConfirmed({});return;}
+    }
+    onAdd([Object.assign({},form,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null})]);
+    onClose();
+  }
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:560,marginTop:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{mode==="sell"?"Sell Cards":"Add Cards"}</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto",position:"relative"}}>
+          {mode==="buy"&&<div style={{display:"flex",borderBottom:"1px solid "+C.border,marginBottom:18}}>{[["photo","📷 Photo"],["manual","📝 Manual"]].map(function(item){var t=item[0],l=item[1];return <button key={t} onClick={function(){setTab(t);}} style={{padding:"10px 18px",fontSize:12,fontWeight:700,cursor:"pointer",border:"none",background:"transparent",color:tab===t?C.gold:C.muted,borderBottom:tab===t?"2px solid "+C.gold:"2px solid transparent"}}>{l}</button>;})}</div>}
+          {(tab==="photo"||mode==="sell")&&(
+            <div>
+              {!img?(
+                <div onClick={function(){fileRef.current.click();}} style={{border:"2px dashed "+C.border,borderRadius:12,padding:36,textAlign:"center",cursor:"pointer"}}>
+                  <div style={{fontSize:44,marginBottom:12}}>📷</div>
+                  <div style={{fontSize:15,color:C.muted,fontWeight:700}}>Tap to upload photo</div>
+                  <div style={{fontSize:12,color:C.muted,marginTop:5}}>{mode==="sell"?"Cards you're selling":"One card or a whole pile"}</div>
+                  <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={function(e){handleFile(e.target.files[0]);}}/>
+                </div>
+              ):(
+                <div>
+                  <img src={img} style={{width:"100%",maxHeight:240,objectFit:"contain",borderRadius:10,border:"1px solid "+C.border,marginBottom:10}} alt="Cards"/>
+                  {imgInfo&&<div style={{fontSize:11,color:C.muted,textAlign:"center",marginBottom:6}}>{imgInfo}</div>}
+                  {statusMsg&&<div style={{fontSize:12,fontWeight:700,textAlign:"center",marginBottom:12,padding:"7px 12px",borderRadius:6,background:statusMsg.startsWith("Error")?C.red+"22":C.gold+"22",color:statusMsg.startsWith("Error")?C.red:C.gold}}>{statusMsg}</div>}
+                  <div style={{display:"flex",gap:10,marginBottom:16}}>
+                    <button style={BO} onClick={function(){setImg(null);setB64(null);setIdentified([]);setMatched([]);setStatusMsg("");setImgInfo("");setDupWarnings([]);setAddAndSell({});}}>🗑 Clear</button>
+                    <button style={{...BG,flex:1,justifyContent:"center",opacity:busy?0.5:1}} onClick={doIdentify} disabled={busy}>{busy?"Reading labels…":"Identify Cards"}</button>
+                  </div>
+                  {mode==="buy"&&identified.length>0&&(
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Identified {identified.length} card{identified.length!==1?"s":""}— enter purchase info for each</div>
+                      {identified.map(function(x,i){
+                        var info=perCardInfo[i]||{};
+                        var dup=dupWarnings[i];
+                        var isInvDup=dup&&dup.existing&&dup.status==="inventory";
+                        var isSoldDup=dup&&dup.existing&&dup.status==="sold";
+                        var soldConfirmed=dupConfirmed[x.certNumber||i];
+                        return(
+                          <div key={i} style={{background:isInvDup?"#fdecea":isSoldDup&&!soldConfirmed?"#fff8ee":C.surface,borderRadius:10,padding:"12px 14px",marginBottom:10,border:"1px solid "+(isInvDup?C.red:isSoldDup&&!soldConfirmed?C.amber:C.border)}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                              <div style={{fontSize:14,fontWeight:800,color:C.text}}>{x.playerName}</div>
+                              {isInvDup&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:C.red,color:"#fff",letterSpacing:.5}}>DUPLICATE — BLOCKED</span>}
+                              {isSoldDup&&!soldConfirmed&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:C.amber,color:"#fff",letterSpacing:.5}}>PREVIOUSLY SOLD</span>}
+                              {isSoldDup&&soldConfirmed&&<span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:C.green,color:"#fff",letterSpacing:.5}}>CONFIRMED</span>}
+                            </div>
+                            {isInvDup&&<div style={{fontSize:11,color:C.red,marginBottom:8}}>Already in your active inventory. Will not be added.</div>}
+                            {isSoldDup&&!soldConfirmed&&(
+                              <div style={{marginBottom:10}}>
+                                <div style={{fontSize:11,color:C.amber,marginBottom:8}}>Previously sold on {dup.existing.saleDate?fmtDate(dup.existing.saleDate):"record"} for {fmtMoney(dup.existing.salePrice)}. Buying it back?</div>
+                                <div style={{display:"flex",gap:8}}>
+                                  <button style={{...BG,padding:"5px 12px",fontSize:11}} onClick={function(){var key=x.certNumber||i;setDupConfirmed(function(prev){var n=Object.assign({},prev);n[key]=true;return n;});}}>Yes, Add It</button>
+                                  <button style={{...BO,padding:"5px 12px",fontSize:11}} onClick={function(){var key=x.certNumber||i;setDupConfirmed(function(prev){var n=Object.assign({},prev);n[key]=false;return n;});}}>No, Skip</button>
+                                </div>
+                              </div>
+                            )}
+                            {!isInvDup&&<div style={{fontSize:11,color:C.muted,marginBottom:10}}>{x.year} {x.brand} {x.set} · {x.gradingCompany} {x.grade}{x.isRookie?" · RC":""}{x.isAuto?" · AUTO":""}</div>}
+                            {!isInvDup&&(
+                              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                                <Fld l="Purchase Price"><Inp type="number" step="0.01" placeholder="0.00" value={info.purchasePrice||""} onChange={function(e){var v=e.target.value;setPerCardInfo(function(pr){var n=pr.slice();n[i]=Object.assign({},n[i],{purchasePrice:v});return n;});}}/></Fld>
+                                <Fld l="Purchase Date"><Inp type="date" value={info.purchaseDate||new Date().toISOString().slice(0,10)} onChange={function(e){var v=e.target.value;setPerCardInfo(function(pr){var n=pr.slice();n[i]=Object.assign({},n[i],{purchaseDate:v});return n;});}}/></Fld>
+                                <Fld l="Where" s2={true}><Sel value={info.wherePurchased||""} onChange={function(e){var v=e.target.value;setPerCardInfo(function(pr){var n=pr.slice();n[i]=Object.assign({},n[i],{wherePurchased:v});return n;});}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {mode==="sell"&&matched.length>0&&(
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Matched to inventory</div>
+                      {matched.map(function(m,i){
+                        var key=m.playerName+m.grade;
+                        var isAddSell=addAndSell[key];
+                        var asInfo=addAndSellInfo[key]||{};
+                        return(
+                          <div key={i} style={{background:C.surface,border:"1px solid "+(m.match?C.green:isAddSell?C.amber:C.red),borderRadius:8,padding:"10px 14px",marginBottom:8}}>
+                            <div style={{display:"flex",alignItems:"center",gap:12}}>
+                              {m.match&&<input type="checkbox" checked={!!selIds[m.match.id]} onChange={function(e){var id=m.match.id;var chk=e.target.checked;setSelIds(function(prev){var n=Object.assign({},prev);n[id]=chk;return n;});}} style={{width:17,height:17,accentColor:C.gold}}/>}
+                              {!m.match&&isAddSell&&<span style={{fontSize:16}}>✚</span>}
+                              {!m.match&&!isAddSell&&<span style={{fontSize:16,color:C.red}}>✕</span>}
+                              <div style={{flex:1}}>
+                                <div style={{fontSize:15,fontWeight:800}}>{m.playerName}</div>
+                                <div style={{fontSize:11,color:C.muted}}>{m.year} {m.brand} {m.set} · {m.gradingCompany} {m.grade}</div>
+                                {m.match&&<div style={{fontSize:11,marginTop:3,color:C.green}}>✓ Found · Cost {fmtMoney(m.match.purchasePrice)}</div>}
+                                {!m.match&&!isAddSell&&<div style={{fontSize:11,marginTop:3,color:C.red}}>Not in inventory</div>}
+                                {!m.match&&isAddSell&&<div style={{fontSize:11,marginTop:3,color:C.amber}}>Will be added then sold</div>}
+                              </div>
+                            </div>
+                            {!m.match&&!isAddSell&&(
+                              <div style={{padding:"8px 0 2px",display:"flex",gap:8,alignItems:"center"}}>
+                                <button style={{...BG,padding:"5px 12px",fontSize:11}} onClick={function(){setAddAndSell(function(prev){var n=Object.assign({},prev);n[key]=true;return n;});setAddAndSellInfo(function(prev){var n=Object.assign({},prev);n[key]={purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:""};return n;});}}>+ Add &amp; Sell</button>
+                                <span style={{fontSize:11,color:C.muted}}>or leave as-is to skip</span>
+                              </div>
+                            )}
+                            {!m.match&&isAddSell&&(
+                              <div style={{padding:"8px 0 0"}}>
+                                <div style={{fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:C.muted,marginBottom:8}}>What did you pay? (enter $0 if unknown)</div>
+                                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
+                                  <Fld l="Purchase Price"><Inp type="number" step="0.01" placeholder="0.00" value={asInfo.purchasePrice||""} onChange={function(e){var k=key;var v=e.target.value;setAddAndSellInfo(function(prev){var n=Object.assign({},prev);n[k]=Object.assign({},n[k]||{},{purchasePrice:v});return n;});}}/></Fld>
+                                  <Fld l="Purchase Date"><Inp type="date" value={asInfo.purchaseDate||new Date().toISOString().slice(0,10)} onChange={function(e){var k=key;var v=e.target.value;setAddAndSellInfo(function(prev){var n=Object.assign({},prev);n[k]=Object.assign({},n[k]||{},{purchaseDate:v});return n;});}}/></Fld>
+                                </div>
+                                <button style={{...BO,padding:"4px 10px",fontSize:11}} onClick={function(){setAddAndSell(function(prev){var n=Object.assign({},prev);delete n[key];return n;});}}>✕ Skip instead</button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginTop:10}}>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                          <Fld l="Sale Price (total)"><Inp type="number" step="0.01" placeholder="0.00" value={saleInfo.price} onChange={function(e){setSaleInfo(function(pr){return Object.assign({},pr,{price:e.target.value});});}}/></Fld>
+                          <Fld l="Sale Date"><Inp type="date" value={saleInfo.date} onChange={function(e){setSaleInfo(function(pr){return Object.assign({},pr,{date:e.target.value});});}}/></Fld>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {tab==="manual"&&mode==="buy"&&<CardForm card={form} upd={upd}/>}
+          {mode==="buy"&&tab==="manual"&&(
+            <button style={BG} onClick={doAddManual}>+ Add Card</button>
+          )}
+          {mode==="buy"&&tab==="manual"&&dupWarnings.length>0&&dupWarnings[0].existing&&dupWarnings[0].status==="sold"&&!dupConfirmed["manual"]&&(
+            <div style={{position:"absolute",bottom:80,left:16,right:16,background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:10,padding:"14px 16px",zIndex:10,boxShadow:"0 4px 16px rgba(0,0,0,0.12)"}}>
+              <div style={{fontSize:13,fontWeight:700,color:C.amber,marginBottom:6}}>⚠ Previously Sold Card</div>
+              <div style={{fontSize:12,color:C.text,marginBottom:12,lineHeight:1.6}}>
+                You previously sold <strong>{dupWarnings[0].existing.playerName}</strong> ({dupWarnings[0].existing.gradingCompany} {dupWarnings[0].existing.grade}) on {dupWarnings[0].existing.saleDate?fmtDate(dupWarnings[0].existing.saleDate):"record"} for {fmtMoney(dupWarnings[0].existing.salePrice)}.<br/>Are you buying this card back?
+              </div>
+              <div style={{display:"flex",gap:10}}>
+                <button style={{...BG,padding:"7px 16px",fontSize:12}} onClick={function(){setDupConfirmed(function(prev){return Object.assign({},prev,{manual:true});});doAddManual();}}>Yes — Add It</button>
+                <button style={{...BO,padding:"7px 16px",fontSize:12}} onClick={function(){setDupWarnings([]);onClose();}}>No — Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          {mode==="buy"&&tab==="photo"&&identified.length>0&&<button style={BG} onClick={doAddAll}>+ Add {identified.length} Card{identified.length!==1?"s":""}</button>}
+          {mode==="sell"&&matched.length>0&&<button style={BD} onClick={doSellMatched}>💰 Mark {Object.keys(selIds).filter(function(k){return selIds[k];}).length+(Object.keys(addAndSell).length)} Sold</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════ SELL MODAL ════════
+function SellModal(p){
+  var card=p.card,onSell=p.onSell,onClose=p.onClose;
+  var [sd,setSd]=useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var profit=sd.price&&card.purchasePrice?parseFloat(sd.price)-parseFloat(card.purchasePrice):null;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:420,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>Mark as Sold</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:18}}><div style={{fontSize:18,fontWeight:800}}>{card.playerName}</div><div style={{fontSize:12,color:C.muted,marginTop:2}}>{card.year} {card.brand} {card.set} · {card.gradingCompany} {card.grade}</div><div style={{fontSize:12,color:C.muted,marginTop:4}}>Cost: {fmtMoney(card.purchasePrice)}</div></div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+            <Fld l="Sale Price *"><Inp type="number" step="0.01" placeholder="0.00" value={sd.price} onChange={function(e){setSd(function(pr){return Object.assign({},pr,{price:e.target.value});});}}/></Fld>
+            <Fld l="Sale Date"><Inp type="date" value={sd.date} onChange={function(e){setSd(function(pr){return Object.assign({},pr,{date:e.target.value});});}}/></Fld>
+          </div>
+          {profit!=null&&<div style={{padding:"12px 16px",borderRadius:10,background:profit>=0?"#e8f5ee":"#fdecea"}}><span style={{fontSize:18,fontWeight:800,color:profit>=0?C.green:C.red}}>{profit>=0?"+":""}{fmtMoney(profit)} ({fmtPct(card.purchasePrice?profit/parseFloat(card.purchasePrice)*100:null)})</span></div>}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          <button style={BD} onClick={function(){if(sd.price)onSell(sd);}}>Confirm Sale</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════ DETAIL MODAL ════════
+function DetailModal(p){
+  var card=p.card,readOnly=p.readOnly,onClose=p.onClose,onUpdate=p.onUpdate,onDelete=p.onDelete;
+  var [editing,setEditing]=useState(false);
+  var [form,setForm]=useState(Object.assign({},card));
+  var [manualPrice,setManualPrice]=useState("");
+  var [manualDate,setManualDate]=useState(new Date().toISOString().slice(0,10));
+  function upd(k,v){setForm(function(pr){return Object.assign({},pr,{[k]:v});});}
+  var pnl=card.purchasePrice&&(card.estimatedValue||card.lastSalePrice)?(card.estimatedValue||card.lastSalePrice)-card.purchasePrice:null;
+  var searchUrl="https://www.130point.com/sales/?query="+encodeURIComponent((card.year||"")+" "+(card.brand||"")+" "+(card.set||"")+" "+(card.playerName||"")+" "+(card.gradingCompany||"")+" "+(card.grade||""));
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:520,marginTop:20,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{card.playerName}</div>
+          <div style={{display:"flex",gap:8}}>{!readOnly&&!editing&&<button style={{...BO,padding:"6px 12px",fontSize:12}} onClick={function(){setEditing(true);}}>✏ Edit</button>}<button style={{...BO,padding:"6px 12px"}} onClick={onClose}>✕</button></div>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto"}}>
+          {!editing?(
+            <div>
+              <div style={{marginBottom:14}}><HoldBadge card={card}/></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:18}}>
+                {[["Year",card.year],["Brand",card.brand],["Set",card.set],["Grade",card.gradingCompany+" "+card.grade],["Cert #",card.certNumber||"—"],["Status",STATUS_LBL[card.cardStatus]]].map(function(item){var l=item[0],v=item[1];return <div key={l}><div style={LBL}>{l}</div><div style={{fontSize:15,color:C.text,fontWeight:600}}>{v||"—"}</div></div>;})}
+              </div>
+              {card.gradingCompany==="BGS"&&card.bgsCenter&&(
+                <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:14}}>
+                  <div style={{...LBL,marginBottom:8}}>BGS Subgrades</div>
+                  <div style={{display:"flex",gap:20}}>{[["Ctr",card.bgsCenter],["Cor",card.bgsCorners],["Edg",card.bgsEdges],["Srf",card.bgsSurface]].map(function(item){var l=item[0],v=item[1];return(<div key={l} style={{textAlign:"center"}}><div style={{fontSize:9,color:C.muted}}>{l}</div><div style={{fontSize:22,fontWeight:800,color:C.gold}}>{v||"—"}</div></div>);})}</div>
+                </div>
+              )}
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+                {card.isRookie&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#dbeafe",color:"#1d4ed8"}}>Rookie Card</span>}
+                {card.isAuto&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#f3e8ff",color:"#7c3aed"}}>Autograph</span>}
+                {card.isPatch&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:"#dcfce7",color:"#15803d"}}>Patch/Relic</span>}
+                {card.isSerialNumbered&&<span style={{fontSize:10,fontWeight:700,padding:"3px 9px",borderRadius:4,background:C.goldBg,color:C.gold}}>/{card.printRun} Print Run</span>}
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+                {[["Cost",fmtMoney(card.purchasePrice),""],["Last Sale",fmtMoney(card.lastSalePrice)+(card.lastSaleDate?" · "+fmtDate(card.lastSaleDate):""),""],["P&L",pnl!=null?fmtMoney(pnl):"—",pnl!=null?(pnl>=0?"pos":"neg"):""]].map(function(item){var l=item[0],v=item[1],t=item[2];return(<div key={l} style={{background:t==="pos"?"#e8f5ee":t==="neg"?"#fdecea":C.surface,borderRadius:10,padding:"12px 14px"}}><div style={LBL}>{l}</div><div style={{fontSize:15,fontWeight:800,color:t==="pos"?C.green:t==="neg"?C.red:C.text}}>{v}</div></div>);})}
+              </div>
+              {card.notes&&<div style={{fontSize:13,color:C.muted,fontStyle:"italic",padding:"12px 16px",background:C.surface,borderRadius:10,marginBottom:14}}>{card.notes}</div>}
+              <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:12}}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Manual Last Sale Update</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                  <Fld l="Last Sale Price"><Inp type="number" step="0.01" placeholder="e.g. 3500.00" value={manualPrice} onChange={function(e){setManualPrice(e.target.value);}}/></Fld>
+                  <Fld l="Sale Date"><Inp type="date" value={manualDate} onChange={function(e){setManualDate(e.target.value);}}/></Fld>
+                </div>
+                <button style={{...BG,padding:"8px 14px",fontSize:12}} onClick={function(){if(!manualPrice)return;var price=parseFloat(manualPrice);var updated=Object.assign({},card,{lastSalePrice:price,lastSaleDate:manualDate||new Date().toISOString().slice(0,10),alertStatus:alertOf(Object.assign({},card,{lastSalePrice:price}))});onUpdate(updated);setManualPrice("");}}>Save Last Sale Price</button>
+              </div>
+              <a href={searchUrl} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 14px",background:C.goldBg,border:"1px solid "+C.gold,borderRadius:8,fontSize:12,fontWeight:700,color:C.gold}}>🔍 View on 130point</a>
+            </div>
+          ):<CardForm card={form} upd={upd}/>}
+        </div>
+        {editing&&<div style={{display:"flex",gap:10,justifyContent:"space-between",padding:"16px 20px",borderTop:"1px solid "+C.border}}><button style={{...BD,padding:"6px 12px",fontSize:12}} onClick={function(){if(window.confirm("Delete this card?"))onDelete(card.id);}}>🗑 Delete</button><div style={{display:"flex",gap:10}}><button style={BO} onClick={function(){setEditing(false);setForm(Object.assign({},card));}}>Cancel</button><button style={BG} onClick={function(){onUpdate(form);}}>✓ Save</button></div></div>}
+      </div>
+    </div>
+  );
+}
+
+// ════════ SETTINGS MODAL ════════
+function SettingsModal(p){
+  var onClose=p.onClose,onResetKey=p.onResetKey;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:400,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}><div style={{fontSize:20,fontWeight:800}}>⚙ Settings</div><button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button></div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>API Keys &amp; Sync</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>Reset to update your Anthropic or Supabase keys on this device.</div>
+            <div style={{fontSize:11,color:C.muted,marginBottom:10}}>Supabase: <strong style={{color:C.text}}>{(localStorage.getItem("cv_sb_url")||"Not configured").replace("https://","").slice(0,20)+"..."}</strong></div>
+            <button style={{...BD,padding:"8px 14px",fontSize:12}} onClick={onResetKey}>Reset All Keys</button>
+          </div>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px"}}><div style={{fontSize:14,fontWeight:700,marginBottom:4}}>About</div><div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>Dad &amp; Lad's Card Vault<br/>Graded card inventory tracker<br/>Data synced via Supabase</div></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ════════ MAIN APP ════════
+function App(){
+  var [apiKey,setApiKey]=useState(null);
+  var [profile,setProfile]=useState(null);
+  var [view,setView]=useState("dashboard");
+  var [mode,setMode]=useState("buy");
+  var [dadCards,setDadCards]=useState([]);
+  var [owenCards,setOwenCards]=useState([]);
+  var [dadWatchlist,setDadWatchlist]=useState([]);
+  var [owenWatchlist,setOwenWatchlist]=useState([]);
+  var [loading,setLoading]=useState(true);
+  var [toasts,setToasts]=useState([]);
+  var [showAdd,setShowAdd]=useState(false);
+  var [showSell,setShowSell]=useState(null);
+  var [showDetail,setShowDetail]=useState(null);
+  var [showSettings,setShowSettings]=useState(false);
+  var [refreshing,setRefreshing]=useState(false);
+  var [prog,setProg]=useState({current:0,total:0,card:""});
+  var [lastRefresh,setLastRefresh]=useState(null);
+  var [search,setSearch]=useState("");
+  var [fAlert,setFAlert]=useState("all");
+  var [fStatus,setFStatus]=useState("all");
+
+  useEffect(function(){
+    async function loadData(){
+      try{
+        var k=localStorage.getItem("cv_api_key");if(k)setApiKey(k);
+        sbInit();
+        if(sbReady()){
+          var dd=await sbGet("cards","dad");var od=await sbGet("cards","owen");
+          var dw=await sbGet("watchlist","dad");var ow=await sbGet("watchlist","owen");
+          if(dd)setDadCards(dd);if(od)setOwenCards(od);
+          if(dw)setDadWatchlist(dw);if(ow)setOwenWatchlist(ow);
+        }else{
+          var d=lsGet("cv_dad_inventory");if(d)setDadCards(JSON.parse(d.value));
+          var o=lsGet("cv_owen_inventory");if(o)setOwenCards(JSON.parse(o.value));
+          var dwd=lsGet("cv_dad_watchlist");if(dwd)setDadWatchlist(JSON.parse(dwd.value));
+          var owd=lsGet("cv_owen_watchlist");if(owd)setOwenWatchlist(JSON.parse(owd.value));
+        }
+        var lr=lsGet("cv_last_refresh");if(lr)setLastRefresh(lr.value);
+      }catch(e){console.log("Load error:",e.message);}
+      setLoading(false);
+    }
+    loadData();
+  },[]);
+
+  var myCards=profile==="dad"?dadCards:owenCards;
+  var myWatchlist=profile==="dad"?dadWatchlist:owenWatchlist;
+  var otherCards=profile==="dad"?owenCards:dadCards;
+  var otherName=profile==="dad"?"Lad":"Dad";
+
+  function setMyWatchlist(wl){if(profile==="dad")setDadWatchlist(wl);else setOwenWatchlist(wl);lsSet("cv_"+profile+"_watchlist",JSON.stringify(wl));sbSet("watchlist",profile,wl);}
+
+  function saveCards(pr,cards){
+    if(pr==="dad")setDadCards(cards);else setOwenCards(cards);
+    lsSet("cv_"+pr+"_inventory",JSON.stringify(cards));
+    sbMergeAndSet("cards",pr,cards);
+  }
+
+  function toast(msg,type){var id=uid();setToasts(function(t){return t.concat([{id:id,msg:msg,type:type||"info"}]);});setTimeout(function(){setToasts(function(t){return t.filter(function(x){return x.id!==id;});});},5000);}
+
+  function addCards(cards){saveCards(profile,myCards.concat(cards));toast("Added "+cards.length+" card"+(cards.length!==1?"s":"")+"!","success");}
+  function updateCard(id,updates){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,updates):x;}));}
+  function deleteCard(id){saveCards(profile,myCards.filter(function(x){return x.id!==id;}));setShowDetail(null);toast("Card deleted","info");}
+  function sellCard(id,sd){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));toast("Card marked as sold","success");}
+  function sellBulk(ids,sd){saveCards(profile,myCards.map(function(x){return ids.includes(x.id)?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));}
+  function addAndSellCards(newCards,sd){var toSell=newCards.map(function(c){return Object.assign({},c,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"});});saveCards(profile,myCards.concat(toSell));toast("Added and sold "+toSell.length+" card"+(toSell.length!==1?"s":""),"success");}
+
+  function bulkSavePrices(updates){
+    var updated=myCards.map(function(x){
+      if(!updates[x.id])return x;
+      var u=updates[x.id];
+      var newCard=Object.assign({},x,{lastSalePrice:u.lastSalePrice,lastSaleDate:u.lastSaleDate});
+      newCard.alertStatus=alertOf(newCard);return newCard;
+    });
+    saveCards(profile,updated);toast("Prices updated","success");
+  }
+
+  async function runRefresh(){
+    var active=myCards.filter(function(x){return x.cardStatus==="inventory";});
+    if(!active.length){toast("No active cards","info");return;}
+    setRefreshing(true);var updated=myCards.slice();var alertCount=0;
+    for(var i=0;i<active.length;i++){
+      var card=active[i];setProg({current:i+1,total:active.length,card:card.playerName});
+      try{
+        var result=await lookupPrice(apiKey,card);
+        if(result&&result.salesFound&&result.lastSalePrice){
+          var existingDate=card.lastSaleDate||"";var newDate=result.lastSaleDate||"";
+          var isMoreRecent=!existingDate||!newDate||(newDate>=existingDate);
+          if(isMoreRecent){
+            var a=alertOf(Object.assign({},card,{lastSalePrice:result.lastSalePrice}));
+            if(a!=="normal")alertCount++;
+            updated=updated.map(function(x){return x.id===card.id?Object.assign({},x,{lastSalePrice:result.lastSalePrice,lastSaleDate:result.lastSaleDate,estimatedValue:result.avgRecentPrice||result.lastSalePrice,alertStatus:a,priceSource:result.source||"web search"}):x;});
+          }
+        }
+      }catch(e){console.log("Price check error:",e.message);}
+      if(i<active.length-1)await new Promise(function(r){setTimeout(r,600);});
+    }
+    if(profile==="dad")setDadCards(updated.slice());else setOwenCards(updated.slice());
+    lsSet("cv_"+profile+"_inventory",JSON.stringify(updated));
+    sbSet("cards",profile,updated);
+    var now=new Date().toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+    lsSet("cv_last_refresh",now);setLastRefresh(now);
+    setRefreshing(false);setProg({current:0,total:0,card:""});
+    toast("Done · "+alertCount+" alert"+(alertCount!==1?"s":""),alertCount>0?"info":"success");
+  }
+
+  if(loading)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:18,color:C.gold,fontWeight:700}}>Loading…</div>;
+  if(!apiKey)return <SetupScreen onSave={function(k){localStorage.setItem("cv_api_key",k);setApiKey(k);}}/>;
+  if(!profile)return <ProfileScreen counts={{dad:{inventory:dadCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:dadCards.filter(function(c){return c.cardStatus==="sold";}).length},owen:{inventory:owenCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:owenCards.filter(function(c){return c.cardStatus==="sold";}).length}}} onSelect={function(pr){setProfile(pr);setView("dashboard");}} onSettings={function(){setShowSettings(true);}}/>;
+
+  return(
+    <div style={{minHeight:"100vh",background:C.bg}}>
+      <Nav profile={profile} mode={mode} view={view} onMode={setMode} onView={function(v){setView(v);setSearch("");setFAlert("all");setFStatus("all");}} onSwitch={function(){setProfile(null);}}/>
+      {view==="dashboard"&&<Dashboard cards={myCards} mode={mode} onRefresh={runRefresh} onAdd={function(){setShowAdd(true);}} refreshing={refreshing} prog={prog} lastRefresh={lastRefresh} onExport={function(type){if(type==="buyer"){exportCSVBuyer(myCards);toast("Buyer report downloaded!","success");}else{exportCSVInternal(myCards);toast("Internal report downloaded!","success");}}}/>}
+      {(view==="inventory"||view==="browse")&&<InventoryView cards={view==="browse"?otherCards:myCards} onAdd={function(){setShowAdd(true);}} onSell={function(x){setShowSell(x);}} onView={function(x){setShowDetail(x);}} mode={mode} readOnly={view==="browse"} ownerName={otherName} search={search} setSearch={setSearch} fAlert={fAlert} setFAlert={setFAlert} fStatus={fStatus} setFStatus={setFStatus} onBulkSave={bulkSavePrices}/>}
+      {view==="sell_rank"&&<SellRankView cards={myCards} onView={function(x){setShowDetail(x);}}/>}
+      {view==="watchlist"&&<WatchlistView apiKey={apiKey} watchlist={myWatchlist} setWatchlist={setMyWatchlist} toast={toast}/>}
+      {showAdd&&<AddModal apiKey={apiKey} mode={mode} myCards={myCards} onAdd={addCards} onSellBulk={sellBulk} onAddAndSell={addAndSellCards} onClose={function(){setShowAdd(false);}} toast={toast}/>}
+      {showSell&&<SellModal card={showSell} onSell={function(sd){sellCard(showSell.id,sd);setShowSell(null);}} onClose={function(){setShowSell(null);}}/>}
+      {showDetail&&<DetailModal card={showDetail} readOnly={view==="browse"} onClose={function(){setShowDetail(null);}} onUpdate={function(u){updateCard(showDetail.id,u);setShowDetail(null);toast("Saved","success");}} onDelete={deleteCard}/>}
+      {showSettings&&<SettingsModal onClose={function(){setShowSettings(false);}} onResetKey={function(){localStorage.removeItem("cv_api_key");localStorage.removeItem("cv_sb_url");localStorage.removeItem("cv_sb_key");setApiKey(null);setShowSettings(false);}}/>}
+      <div style={{position:"fixed",bottom:20,right:20,display:"flex",flexDirection:"column",gap:8,zIndex:200,maxWidth:300}}>
+        {toasts.map(function(t){return <div key={t.id} style={{background:C.card,borderLeft:"4px solid "+(t.type==="success"?C.green:t.type==="error"?C.red:C.gold),borderRadius:10,padding:"12px 16px",fontSize:13,fontWeight:600,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>{t.msg}</div>;})}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App,null));
+</script>
+</body>
+</html>
