@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dad & Lad's Card Vault</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.10/babel.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4ee;color:#1a1a1a;}
+input,select,textarea,button{font-family:inherit;}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-size:18px;color:#2d6a3f;font-weight:700;">Loading Card Vault…</div></div>
+<script type="text/babel" data-presets="react">
+var useState=React.useState,useEffect=React.useEffect,useRef=React.useRef,useMemo=React.useMemo;
+var C={gold:"#2d6a3f",goldBg:"rgba(45,106,63,0.1)",green:"#1e6b3a",red:"#c0392b",amber:"#d68910",text:"#1a1a1a",muted:"#6b7d65",border:"#ccd8c4",bg:"#f0f4ee",card:"#fff",surface:"#e8ede3"};
+var GCS=["PSA","BGS","SGC","CGC"];
+var BRANDS=["Topps","Panini","Bowman","Upper Deck","Donruss","Fleer","Stadium Club","Finest","Select","Optic","Mosaic","National Treasures","Chronicles","Other"];
+var WHERE=["eBay","Card Show","LCS","Alt","Fanatics","IG/FB","Other"];
+var STATUS_LBL={inventory:"In Inventory",sold:"Sold",consigned:"Consigned",grading:"Out for Grading"};
+var BLANK={playerName:"",year:"",brand:"",set:"",isRookie:false,isAuto:false,isPatch:false,isSerialNumbered:false,printRun:"",gradingCompany:"PSA",grade:"",certNumber:"",bgsCenter:"",bgsCorners:"",bgsEdges:"",bgsSurface:"",purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:"",notes:""};
+var LOGO_B64="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABQAFADASIAAhEBAxEB/8QAHAAAAgMBAQEBAAAAAAAAAAAABQYDBAcCAQj/xAA4EAACAQMDAgQEBAQHAQAAAAABAgMABBEFEiExBhNBUWEiMnGBFCORodEHFUJSYpKxwfAkM8L/xAAZAQADAQEBAAAAAAAAAAAAAAAAAQIDBAX/xAAiEQADAQACAgIDAQAAAAAAAAAAAQIRITEDElEiQWH/2gAMAwEAAhEDEQA/AOqxxpGgRFCqOAAMCpVYiiiigCiiigCiiigCiiigCiiigCiiigCiiigCiiigClPiNDFoepOSMrauQR6gVXXmuaXpkzQ3V5HHIvVTmuC8cbppWqxoDmaykAI6kEVhbXKjMm7s53p+rS28jQM7vEDlN3JB9DVjpfii/t5FDyPOnRkcn9RVHZSxrbAFySD0x0q6WCOSNSoy2OvpWHF2tDdJdGos/EbzBFEyFmGST69BipW8Ra0HJF7J+hFYRWqiT5j+gr3kIiJAVQCeprXmfhFJIbHxA12wBvIZB6tGRn8qttD8SWuqAqD5My9Ubr+VcAtoFi3JgljyT3q98NWiRyzSFR5rDCewHaqxy2QjB5PV0UUV0HMFFFFABRRRQAUUUUAFYuQoJJwBkk1lSb4iaw2l6IIIm2zXreUD3CjcxqJuyiUk3RzHxj4lk1jUzaxOfslu5UA9GbuaxbRVhgA2AHHWsi0yI3Ek0pznG0VrqnAHqPWuVGKS0dsm5dkK8lkjQqDwRyB71b6RqJjZVdsMDwR3qs8UQGKR2z1DcfxrR0x1dV2nIPFdEN1qRbTRrKVlSRjubaQM8981KniLMFGeuOaFijkVQe55PpUmkMfmkY9Sc1rjBX+xJsxikmZ1jlIJIyAe9aLRhiGwAcUovI2Rv+kn3FbLOD5+CcgHOauhqxxYvS1jKnbggmjWdZFDIysD2Ize1FFYmh55q0Lppmpz7iGFrLtI/pNYumwmaRWB6V0f4lafLPomoQqMh4mUn0zmua6WfIwTg9RWWdJnbhuzRs5SIVPdh0r2mY9+K8oBGBUiMxwAwGe/NdEY8UZM3HZLHGVZ8jAzwfSkuMbj9KcbwSoHbOcU1JHuHzL06U4LhTikZ8DG/AHU1aaVAscYJHb0pWzQiKFD1Kgn8acYXHPQHiuiCsjOT2LFFFFbGQUUUUAFFFFADcLzipMVi1JBrFqxWUUUUwCiiigAooooAKKKKACiiigD/9k=";
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function fmtMoney(n){return(n!=null&&n!=="")?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";}
+function fmtPct(n){return n!=null?(n>0?"+":"")+Number(n).toFixed(1)+"%":"—";}
+function fmtDate(s){return s?new Date(s+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"}):"—";}
+function lsGet(k){try{var v=localStorage.getItem(k);return v?{value:v}:null;}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+var _sbUrl=null,_sbKey=null;
+function sbInit(){_sbUrl=localStorage.getItem("cv_sb_url");_sbKey=localStorage.getItem("cv_sb_key");}
+function sbReady(){return!!(_sbUrl&&_sbKey);}
+async function sbGet(table,profile){
+  if(!sbReady())return null;
+  try{
+    var r=await fetch(_sbUrl+"/rest/v1/"+table+"?profile=eq."+encodeURIComponent(profile)+"&select=data",{headers:{"apikey":_sbKey,"Authorization":"Bearer "+_sbKey}});
+    var rows=await r.json();
+    return(rows&&rows.length>0&&rows[0].data)?rows[0].data:null;
+  }catch(e){return null;}
+}
+async function sbSet(table,profile,data){
+  if(!sbReady())return;
+  try{
+    await fetch(_sbUrl+"/rest/v1/"+table,{method:"POST",headers:{"apikey":_sbKey,"Authorization":"Bearer "+_sbKey,"Content-Type":"application/json","Prefer":"resolution=merge-duplicates"},body:JSON.stringify({id:table+"_"+profile,profile:profile,data:data,updated_at:new Date().toISOString()})});
+  }catch(e){}
+}
+async function sbMerge(table,profile,localCards){
+  if(!sbReady()){return;}
+  try{
+    var cloud=await sbGet(table,profile);
+    var merged=localCards.slice();
+    if(cloud&&Array.isArray(cloud)){
+      var ids=new Set(localCards.map(function(c){return c.id;}));
+      cloud.forEach(function(c){if(!ids.has(c.id))merged.push(c);});
+    }
+    await sbSet(table,profile,merged);
+    lsSet("cv_"+profile+"_inventory",JSON.stringify(merged));
+  }catch(e){await sbSet(table,profile,localCards);}
+}
+async function testSb(url,key){
+  var r=await fetch(url+"/rest/v1/cards?limit=1",{headers:{"apikey":key,"Authorization":"Bearer "+key}});
+  if(!r.ok)throw new Error(await r.text());
+}
+
+async function apiCall(key,messages,useSearch){
+  var body={model:"claude-sonnet-4-6",max_tokens:1500,messages:messages};
+  if(useSearch)body.tools=[{type:"web_search_20250305",name:"web_search"}];
+  var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)});
+  var d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d;
+}
+function getText(data){return(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");}
+function parseJSON(txt,open,close){var s=txt.indexOf(open),e=txt.lastIndexOf(close);if(s===-1||e===-1)return null;try{return JSON.parse(txt.slice(s,e+1));}catch(e){return null;}}
+
+async function identifyCards(key,b64,mime){
+  var prompt='Identify every graded sports card in this photo. Output ONLY a raw JSON array, no markdown. Each object: {playerName,year,brand,set,gradingCompany,grade,isRookie,isAuto,isPatch,isSerialNumbered,printRun,certNumber,bgsCenter,bgsCorners,bgsEdges,bgsSurface,_unclear}. Rules: gradingCompany=PSA/BGS/SGC/CGC. Read each label independently. PSA cert=numeric label. BGS cert=barcode area (starts 00). NEVER guess cert — if unreadable set null and add field to _unclear[]. BGS: read 4 subgrades. Return [] if none found.';
+  var data=await apiCall(key,[{role:"user",content:[{type:"image",source:{type:"base64",media_type:mime,data:b64}},{type:"text",text:prompt}]}],false);
+  return parseJSON(getText(data),"[","]")||[];
+}
+async function lookupPrice(key,card){
+  var q=card.year+" "+card.brand+" "+card.set+" "+card.playerName+" "+card.gradingCompany+" "+card.grade;
+  var data=await apiCall(key,[{role:"user",content:'Search eBay completed listings for sold prices of: "'+q+'". Return ONLY JSON: {"lastSalePrice":number_or_null,"lastSaleDate":"YYYY-MM-DD_or_null","avgRecentPrice":number_or_null,"salesFound":boolean}'}],true);
+  return parseJSON(getText(data),"{","}")||null;
+}
+async function lookupWatchlist(key,query){
+  var data=await apiCall(key,[{role:"user",content:'Search eBay sold listings for: "'+query+'". Return ONLY JSON: {"lastSalePrice":number_or_null,"lastSaleDate":"YYYY-MM-DD_or_null","avgRecentPrice":number_or_null,"lowestAsk":number_or_null,"salesFound":boolean,"verdict":"good_buy"|"fair"|"overpriced"|"unknown","verdictReason":"one sentence"}'}],true);
+  return parseJSON(getText(data),"{","}")||null;
+}
+
+function alertOf(card){
+  if(!card.purchasePrice||!card.lastSalePrice)return"normal";
+  var pct=((card.lastSalePrice-card.purchasePrice)/card.purchasePrice)*100;
+  var gain=card.lastSalePrice-card.purchasePrice;
+  if(gain<25)return"normal";
+  if(pct>=25)return"urgent_sale";
+  if(pct>=10)return"time_to_sell";
+  return"normal";
+}
+function unrealGL(card){
+  if(!card.purchasePrice)return null;
+  var mkt=parseFloat(card.estimatedValue||card.lastSalePrice||0);
+  if(!mkt)return null;
+  var cost=parseFloat(card.purchasePrice);
+  return{dollars:mkt-cost,pct:((mkt-cost)/cost)*100};
+}
+function realGL(card){
+  if(!card.purchasePrice||!card.salePrice)return null;
+  var p=parseFloat(card.salePrice)-parseFloat(card.purchasePrice);
+  return{dollars:p,pct:(p/parseFloat(card.purchasePrice))*100};
+}
+function annROI(card){
+  if(!card.purchasePrice||!card.salePrice||!card.purchaseDate||!card.saleDate)return null;
+  var days=(new Date(card.saleDate)-new Date(card.purchaseDate))/(86400000);
+  if(days<1)return null;
+  var sr=(parseFloat(card.salePrice)-parseFloat(card.purchasePrice))/parseFloat(card.purchasePrice);
+  return(Math.pow(1+sr,365/days)-1)*100;
+}
+function roiPct(card){
+  if(!card.purchasePrice||!card.lastSalePrice)return null;
+  return((card.lastSalePrice-card.purchasePrice)/card.purchasePrice)*100;
+}
+function holdSig(card){
+  var r=roiPct(card);
+  if(r==null)return"unknown";
+  if(r>=25)return"sell";
+  if(r>=10)return"watch";
+  if(r>=0)return"hold";
+  return"underwater";
+}
+function daysHeld(card){
+  if(!card.purchaseDate)return null;
+  var end=card.saleDate?new Date(card.saleDate):new Date();
+  return Math.round((end-new Date(card.purchaseDate))/86400000);
+}
+function checkDups(newCards,existing){
+  return newCards.map(function(nc){
+    var ncCert=String(nc.certNumber||"").trim();
+    var match=existing.find(function(ec){
+      var ecCert=String(ec.certNumber||"").trim();
+      if(ncCert&&ecCert)return ncCert===ecCert;
+      return String(nc.playerName||"").toLowerCase().trim()===String(ec.playerName||"").toLowerCase().trim()&&String(nc.grade||"").trim()===String(ec.grade||"").trim()&&String(nc.gradingCompany||"").trim()===String(ec.gradingCompany||"").trim()&&String(nc.year||"").trim()===String(ec.year||"").trim()&&(!nc.set||!ec.set||String(nc.set||"").toLowerCase().trim()===String(ec.set||"").toLowerCase().trim());
+    })||null;
+    return{card:nc,existing:match,status:match?match.cardStatus||"inventory":null};
+  });
+}
+
+function csvRow(vals){return vals.map(function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");}
+function dlCSV(csv,fn){var blob=new Blob([csv],{type:"text/csv"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);}
+function exportInternal(cards){
+  var h=["Player","Year","Brand","Set","Grading Co","Grade","Cert #","BGS Ctr","BGS Cor","BGS Edg","BGS Srf","RC","Auto","Patch","Serial","Print Run","Purchase Price","Purchase Date","Where","Last Sale Price","Last Sale Date","Unrealized G/L $","Unrealized G/L %","Realized G/L $","Realized G/L %","Simple ROI %","Annualized ROI %","Days Held","Sale Price","Sale Date","Alert","Status","Notes"];
+  var rows=cards.map(function(c){
+    var u=unrealGL(c),r=realGL(c),roi=roiPct(c),ar=annROI(c),dh=daysHeld(c);
+    return csvRow([c.playerName||"",c.year||"",c.brand||"",c.set||"",c.gradingCompany||"",c.grade||"",c.certNumber||"",c.bgsCenter||"",c.bgsCorners||"",c.bgsEdges||"",c.bgsSurface||"",c.isRookie?"Yes":"No",c.isAuto?"Yes":"No",c.isPatch?"Yes":"No",c.isSerialNumbered?"Yes":"No",c.printRun||"",c.purchasePrice||"",c.purchaseDate||"",c.wherePurchased||"",c.lastSalePrice||"",c.lastSaleDate||"",u?u.dollars.toFixed(2):"",u?u.pct.toFixed(1)+"%":"",r?r.dollars.toFixed(2):"",r?r.pct.toFixed(1)+"%":"",roi!=null?roi.toFixed(1)+"%":"",ar!=null?ar.toFixed(1)+"%":"",dh||"",c.salePrice||"",c.saleDate||"",c.alertStatus||"normal",c.cardStatus||"inventory",c.notes||""]);
+  });
+  dlCSV([h.join(",")].concat(rows).join("\n"),"CardVault_Internal_"+new Date().toISOString().slice(0,10)+".csv");
+}
+function exportBuyer(cards){
+  var now=new Date(),cut=new Date(now.getTime()-90*86400000);
+  var active=cards.filter(function(c){return c.cardStatus==="inventory";});
+  var h=["Player","Year","Brand","Set","Grading Co","Grade","Cert #","RC","Auto","Patch","BGS Subgrades","Market Value","# Sales (90 Days)","Trend","Condition Notes"];
+  var rows=active.map(function(c){
+    var mkt="",cnt="Insufficient data";
+    if(c.lastSaleDate&&new Date(c.lastSaleDate)>=cut){mkt=c.estimatedValue||c.lastSalePrice||"";cnt=c.count30day?c.count30day+" (30d)":"1";}
+    var trend="—";
+    if(c.lastSalePrice&&c.purchasePrice){var ch=((c.lastSalePrice-c.purchasePrice)/c.purchasePrice)*100;trend=ch>5?"↑ Rising":ch<-5?"↓ Declining":"→ Stable";}
+    var cond=c.gradingCompany==="BGS"&&c.bgsCenter?"BGS: Ctr "+c.bgsCenter+", Cor "+c.bgsCorners+", Edg "+c.bgsEdges+", Srf "+c.bgsSurface:c.gradingCompany+" "+c.grade+" — Straight Grade";
+    return csvRow([c.playerName||"",c.year||"",c.brand||"",c.set||"",c.gradingCompany||"",c.grade||"",c.certNumber||"",c.isRookie?"Yes":"No",c.isAuto?"Yes":"No",c.isPatch?"Yes":"No",c.gradingCompany==="BGS"&&c.bgsCenter?c.bgsCenter+"/"+c.bgsCorners+"/"+c.bgsEdges+"/"+c.bgsSurface:"",mkt?"$"+parseFloat(mkt).toFixed(2):"Insufficient data",cnt,trend,cond]);
+  });
+  dlCSV([h.join(",")].concat(rows).join("\n"),"CardVault_Buyer_"+new Date().toISOString().slice(0,10)+".csv");
+}
+
+async function compressImg(dataUrl,maxPx,q){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var w=img.width,h=img.height;
+        if(w>maxPx||h>maxPx){var s=maxPx/Math.max(w,h);w=Math.round(w*s);h=Math.round(h*s);}
+        var cv=document.createElement("canvas");cv.width=w;cv.height=h;
+        var ctx=cv.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        var out=cv.toDataURL("image/jpeg",q);
+        resolve({b64:out.split(",")[1],mime:"image/jpeg",w:w,h:h});
+      }catch(e){reject(e);}
+    };
+    img.onerror=function(){reject(new Error("load failed"));};
+    img.src=dataUrl;
+  });
+}
+
+var INP={padding:"9px 11px",background:"#e8ede3",border:"1px solid #ccd8c4",borderRadius:7,color:"#1a1a1a",fontSize:14,width:"100%",outline:"none"};
+var BG={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:"#2d6a3f",color:"#fff",display:"inline-flex",alignItems:"center",gap:6};
+var BO={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",background:"transparent",border:"1px solid #ccd8c4",color:"#6b7d65",display:"inline-flex",alignItems:"center",gap:6};
+var BD={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",background:"#fdecea",border:"1px solid #f5a0a0",color:"#c0392b",display:"inline-flex",alignItems:"center",gap:6};
+var LBL={fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"#6b7d65",display:"block",marginBottom:5};
+
+function Inp(p){return <input style={INP} {...p}/>;}
+function Sel(p){var ch=p.children;var rest=Object.assign({},p);delete rest.children;return <select style={INP} {...rest}>{ch}</select>;}
+function Fld(p){return <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:p.s2?"span 2":undefined}}><span style={LBL}>{p.l}</span>{p.children}</div>;}
+function HR(){return <hr style={{border:"none",borderTop:"1px solid #ccd8c4",margin:"14px 0"}}/>;}
+function Badge(p){return <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:p.bg,color:p.c,letterSpacing:.5}}>{p.t}</span>;}
+
+function HoldBadge(p){
+  var h=holdSig(p.card);
+  var map={sell:{bg:"#e8f5ee",c:C.green,t:"✅ Sell"},watch:{bg:"#fff8ee",c:C.amber,t:"⚡ Consider"},hold:{bg:C.surface,c:C.muted,t:"⏳ Hold"},underwater:{bg:"#fdecea",c:C.red,t:"🔴 Under"},unknown:{bg:C.surface,c:C.muted,t:"— No Data"}};
+  var s=map[h]||map.unknown;
+  return <Badge bg={s.bg} c={s.c} t={s.t}/>;
+}
+
+function SetupScreen(p){
+  var [key,setKey]=useState("");
+  var [sbUrl,setSbUrl]=useState(localStorage.getItem("cv_sb_url")||"");
+  var [sbKey,setSbKey]=useState(localStorage.getItem("cv_sb_key")||"");
+  var [err,setErr]=useState("");
+  var [busy,setBusy]=useState(false);
+  async function save(){
+    if(!key.trim()||!key.trim().startsWith("sk-ant-")){setErr("Enter a valid Anthropic API key (starts with sk-ant-)");return;}
+    if(!sbUrl.trim()||!sbKey.trim()){setErr("Enter your Supabase Project URL and anon key");return;}
+    setBusy(true);setErr("");
+    try{
+      await apiCall(key.trim(),[{role:"user",content:"Say OK"}],false);
+      await testSb(sbUrl.trim(),sbKey.trim());
+      localStorage.setItem("cv_sb_url",sbUrl.trim());
+      localStorage.setItem("cv_sb_key",sbKey.trim());
+      p.onSave(key.trim());
+    }catch(e){setErr("Connection failed: "+e.message);}
+    setBusy(false);
+  }
+  return(
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:24,background:C.bg}}>
+      <div style={{width:"100%",maxWidth:480}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <img src={LOGO_B64} alt="Dad and Lad's" style={{width:90,height:90,borderRadius:12,objectFit:"cover",marginBottom:14}}/>
+          <div style={{fontSize:34,fontWeight:800,color:C.text,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:4}}>CARD VAULT</div>
+          <div style={{fontSize:12,color:C.muted,marginTop:6,letterSpacing:3,textTransform:"uppercase"}}>One-time setup</div>
+        </div>
+        <div style={{background:C.card,borderRadius:14,padding:24,border:"1px solid "+C.border}}>
+          <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Anthropic API Key</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>From console.anthropic.com → API Keys</div>
+            <Fld l="Key"><Inp type="password" value={key} onChange={function(e){setKey(e.target.value);}} placeholder="sk-ant-api03-..."/></Fld>
+          </div>
+          <div style={{background:C.surface,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.gold,marginBottom:8}}>Supabase — Cross-Device Sync</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>From supabase.com → Project Settings → API Keys</div>
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              <Fld l="Project URL"><Inp type="text" value={sbUrl} onChange={function(e){setSbUrl(e.target.value);}} placeholder="https://xxxx.supabase.co"/></Fld>
+              <Fld l="Anon Public Key"><Inp type="password" value={sbKey} onChange={function(e){setSbKey(e.target.value);}} placeholder="eyJh..."/></Fld>
+            </div>
+          </div>
+          {err&&<div style={{padding:"8px 12px",background:"#fdecea",borderRadius:6,fontSize:12,color:C.red,marginBottom:10}}>{err}</div>}
+          <button style={{...BG,width:"100%",justifyContent:"center"}} onClick={save} disabled={busy}>{busy?"Testing…":"Save & Get Started →"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileScreen(p){
+  var counts=p.counts,onSelect=p.onSelect,onSettings=p.onSettings;
+  return(
+    <div style={{minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:32,padding:32,background:C.bg}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:14}}>
+          <img src={LOGO_B64} alt="Dad and Lad's" style={{width:110,height:110,borderRadius:14,objectFit:"cover",boxShadow:"0 4px 16px rgba(0,0,0,0.12)"}}/>
+        </div>
+        <div style={{fontSize:36,fontWeight:800,color:C.text,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:4}}>CARD VAULT</div>
+        <div style={{fontSize:11,letterSpacing:4,textTransform:"uppercase",color:C.muted,marginTop:6}}>Graded Card Inventory</div>
+      </div>
+      <div style={{fontSize:11,color:C.muted,letterSpacing:2,textTransform:"uppercase"}}>Whose Collection?</div>
+      <div style={{display:"flex",gap:20,flexWrap:"wrap",justifyContent:"center"}}>
+        {[{k:"dad",n:"Dad"},{k:"owen",n:"Lad"}].map(function(pr){
+          return(
+            <div key={pr.k} onClick={function(){onSelect(pr.k);}} style={{width:160,height:190,border:"1.5px solid "+C.border,borderRadius:14,background:C.card,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",gap:10,boxShadow:"0 2px 12px rgba(0,0,0,0.06)"}}>
+              <div style={{width:60,height:60,borderRadius:"50%",background:C.goldBg,border:"1.5px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,fontWeight:800,color:C.gold}}>{pr.n[0]}</div>
+              <div style={{fontSize:20,fontWeight:800}}>{pr.n}</div>
+              <div style={{fontSize:11,color:C.muted}}>{counts[pr.k].inventory} in inventory{counts[pr.k].sold>0?" · "+counts[pr.k].sold+" sold":""}</div>
+            </div>
+          );
+        })}
+      </div>
+      <button onClick={onSettings} style={{...BO,fontSize:12,padding:"8px 16px"}}>⚙ Settings</button>
+    </div>
+  );
+}
+
+function Nav(p){
+  var profile=p.profile,mode=p.mode,view=p.view,onMode=p.onMode,onView=p.onView,onSwitch=p.onSwitch;
+  var name=profile==="dad"?"Dad":"Lad";
+  var other=profile==="dad"?"Lad":"Dad";
+  var tabs=[["inventory","My Cards"],["sell_rank","Sell Now"],["watchlist","Watchlist"],["browse",other+"'s"]];
+  return(
+    <div style={{background:C.card,borderBottom:"1px solid "+C.border,position:"sticky",top:0,zIndex:20,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
+      <div style={{display:"flex",alignItems:"center",padding:"0 8px",height:52,gap:5,overflowX:"auto"}}>
+        <div style={{display:"flex",alignItems:"center",gap:5,flexShrink:0}}>
+          <img src={LOGO_B64} alt="Dad and Lad's" style={{width:30,height:30,borderRadius:4,objectFit:"cover"}}/>
+          <div style={{fontSize:14,fontWeight:800,color:C.gold,fontFamily:"'Barlow Condensed',sans-serif",letterSpacing:2,flexShrink:0}}>VAULT</div>
+        </div>
+        <button onClick={function(){onView("dashboard");}} style={{padding:"4px 8px",borderRadius:6,fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:view==="dashboard"?"1px solid "+C.gold:"1px solid transparent",background:view==="dashboard"?C.goldBg:"transparent",color:view==="dashboard"?C.gold:C.muted,whiteSpace:"nowrap",flexShrink:0}}>Home</button>
+        <div style={{display:"flex",border:"1px solid "+C.border,borderRadius:7,overflow:"hidden",flexShrink:0}}>
+          {["buy","sell"].map(function(m){
+            return(
+              <button key={m} onClick={function(){onMode(m);}} style={{padding:"4px 9px",fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:"none",background:mode===m?(m==="buy"?"#e8f5ee":"#fdecea"):"transparent",color:mode===m?(m==="buy"?C.green:C.red):C.muted}}>{m}</button>
+            );
+          })}
+        </div>
+        <div style={{display:"flex",gap:2,flex:1,overflowX:"auto"}}>
+          {tabs.map(function(item){
+            var v=item[0],l=item[1];
+            return(
+              <button key={v} onClick={function(){onView(v);}} style={{padding:"4px 8px",borderRadius:6,fontSize:10,fontWeight:700,textTransform:"uppercase",cursor:"pointer",border:view===v?"1px solid "+C.gold:"1px solid transparent",background:view===v?C.goldBg:"transparent",color:view===v?C.gold:C.muted,whiteSpace:"nowrap",flexShrink:0}}>{l}</button>
+            );
+          })}
+        </div>
+        <div onClick={onSwitch} style={{display:"flex",alignItems:"center",gap:5,padding:"4px 8px",border:"1px solid "+C.border,borderRadius:7,cursor:"pointer",background:C.surface,flexShrink:0}}>
+          <div style={{width:20,height:20,borderRadius:"50%",background:C.goldBg,border:"1px solid "+C.gold,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:800,color:C.gold}}>{name[0]}</div>
+          <span style={{fontSize:11,fontWeight:600}}>{name}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Dashboard(p){
+  var cards=p.cards,mode=p.mode,onRefresh=p.onRefresh,onAdd=p.onAdd,refreshing=p.refreshing,prog=p.prog,lastRefresh=p.lastRefresh,onExport=p.onExport;
+  var active=cards.filter(function(x){return x.cardStatus==="inventory";});
+  var sold=cards.filter(function(x){return x.cardStatus==="sold";});
+  var cost=active.reduce(function(s,x){return s+(parseFloat(x.purchasePrice)||0);},0);
+  var val=active.reduce(function(s,x){return s+(parseFloat(x.estimatedValue||x.lastSalePrice||x.purchasePrice)||0);},0);
+  var uDol=active.reduce(function(s,x){var u=unrealGL(x);return s+(u?u.dollars:0);},0);
+  var uPct=cost>0?uDol/cost*100:null;
+  var rDol=sold.reduce(function(s,x){var r=realGL(x);return s+(r?r.dollars:0);},0);
+  var rCost=sold.reduce(function(s,x){return s+(parseFloat(x.purchasePrice)||0);},0);
+  var rPct=rCost>0?rDol/rCost*100:null;
+  var alerts=active.filter(function(x){return x.alertStatus!=="normal";});
+  var sellNow=active.filter(function(x){return holdSig(x)==="sell";});
+  var stats=[["In Inventory",active.length,C.gold],["Cost Basis",fmtMoney(cost),C.text],["Est. Value",fmtMoney(val),C.text],["Unrealized G/L",fmtMoney(uDol)+" "+fmtPct(uPct),uDol>=0?C.green:C.red],["Realized G/L",fmtMoney(rDol)+" "+fmtPct(rPct),rDol>=0?C.green:C.red],["Ready to Sell",sellNow.length,sellNow.length>0?C.green:C.text]];
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:16}}>
+        {stats.map(function(item){
+          return(<div key={item[0]} style={{background:C.card,borderRadius:10,padding:"12px 14px",border:"1px solid "+C.border}}><div style={{fontSize:9,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:6}}>{item[0]}</div><div style={{fontSize:18,fontWeight:800,color:item[2],lineHeight:1}}>{item[1]}</div></div>);
+        })}
+      </div>
+      <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>🔄 Morning Price Refresh</div>
+        <div style={{fontSize:12,color:C.muted,marginBottom:12}}>{refreshing?"Checking "+prog.card+"… ("+prog.current+"/"+prog.total+")":lastRefresh?"Last run: "+lastRefresh:"Checks eBay sold for all "+active.length+" active cards"}</div>
+        {refreshing&&<div style={{height:4,background:C.border,borderRadius:2,marginBottom:12,overflow:"hidden"}}><div style={{height:"100%",background:C.gold,width:(prog.total?prog.current/prog.total*100:0)+"%",transition:"width .3s"}}></div></div>}
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button style={{...BO,borderColor:mode==="sell"?C.red:C.border,color:mode==="sell"?C.red:C.muted}} onClick={onAdd}>{mode==="sell"?"− Sell Card":"+ Add Card"}</button>
+          <button style={{...BG,opacity:refreshing||!active.length?0.4:1}} onClick={onRefresh} disabled={refreshing||!active.length}>{refreshing?"Running…":"Run Refresh"}</button>
+          <button style={BO} onClick={function(){onExport("internal");}}>⬇ Internal</button>
+          <button style={BO} onClick={function(){onExport("buyer");}}>📋 Buyer Report</button>
+        </div>
+      </div>
+      {alerts.length>0&&alerts.map(function(x){
+        var pct=x.purchasePrice&&x.lastSalePrice?(x.lastSalePrice-x.purchasePrice)/x.purchasePrice*100:null;
+        var urg=x.alertStatus==="urgent_sale";
+        return(
+          <div key={x.id} style={{background:C.card,border:"1px solid "+(urg?C.red:C.amber),borderRadius:10,padding:"14px 16px",marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div>
+              <Badge bg={urg?C.red:C.amber} c="#fff" t={urg?"URGENT SALE":"TIME TO SELL"}/>
+              <div style={{fontSize:16,fontWeight:800,marginTop:6}}>{x.playerName}</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:2}}>{x.year} {x.brand} · {x.gradingCompany} {x.grade}</div>
+              <div style={{fontSize:11,color:C.muted,marginTop:4}}>Cost {fmtMoney(x.purchasePrice)} → Last {fmtMoney(x.lastSalePrice)}</div>
+            </div>
+            <div style={{fontSize:26,fontWeight:800,color:urg?C.red:C.amber,marginLeft:16}}>{fmtPct(pct)}</div>
+          </div>
+        );
+      })}
+      {alerts.length===0&&active.length>0&&<div style={{textAlign:"center",padding:40,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>📊</div><div style={{fontWeight:700}}>No alerts — run refresh to check prices</div></div>}
+      {active.length===0&&<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:32,marginBottom:12}}>🃏</div><div style={{fontWeight:700,marginBottom:16}}>No cards yet</div><button style={BG} onClick={onAdd}>+ Add Your First Card</button></div>}
+    </div>
+  );
+}
+
+function SellRank(p){
+  var cards=p.cards,onView=p.onView;
+  var active=cards.filter(function(x){return x.cardStatus==="inventory";});
+  var ranked=active.filter(function(x){return x.purchasePrice;}).map(function(x){
+    var roi=roiPct(x)||0,hvs=holdSig(x);
+    var score=(hvs==="sell"?40:hvs==="watch"?20:0)+(x.alertStatus==="urgent_sale"?30:x.alertStatus==="time_to_sell"?15:0)+Math.min(roi,30);
+    return Object.assign({},x,{_score:score,_roi:roi,_hvs:hvs});
+  }).sort(function(a,b){return b._score-a._score;});
+  function Sec(sp){
+    if(!sp.cards||!sp.cards.length)return null;
+    return(
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:10,fontWeight:700,letterSpacing:3,textTransform:"uppercase",color:C.muted,marginBottom:10}}>{sp.title} ({sp.cards.length})</div>
+        {sp.cards.map(function(x){
+          var gain=x.purchasePrice&&x.lastSalePrice?x.lastSalePrice-x.purchasePrice:null;
+          return(
+            <div key={x.id} style={{background:C.card,borderRadius:10,padding:"12px 16px",marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",border:"1px solid "+C.border}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",gap:6,marginBottom:4}}><HoldBadge card={x}/>{x.alertStatus!=="normal"&&<Badge bg={x.alertStatus==="urgent_sale"?C.red:C.amber} c="#fff" t={x.alertStatus==="urgent_sale"?"URGENT":"ALERT"}/>}</div>
+                <div style={{fontSize:15,fontWeight:800}}>{x.playerName}</div>
+                <div style={{fontSize:11,color:C.muted}}>{x.year} {x.brand} · {x.gradingCompany} {x.grade}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:3}}>Cost {fmtMoney(x.purchasePrice)} · Last {fmtMoney(x.lastSalePrice)}{gain!=null&&<span style={{color:gain>=0?C.green:C.red,fontWeight:700}}> · {gain>=0?"+":""}{fmtMoney(gain)}</span>}</div>
+              </div>
+              <button onClick={function(){onView(x);}} style={{...BO,padding:"5px 12px",fontSize:11,marginLeft:10}}>View</button>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  if(!active.length)return <div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>📋</div><div style={{fontWeight:700}}>No cards in inventory</div></div>;
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{background:C.card,borderRadius:12,padding:"14px 18px",marginBottom:20,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:4}}>🎯 Sell Recommendation Engine</div>
+        <div style={{fontSize:12,color:C.muted}}>Cards ranked by ROI and alert status. Run a price refresh first for best results.</div>
+      </div>
+      <Sec title="🟢 Sell Now" cards={ranked.filter(function(x){return x._hvs==="sell";})}/>
+      <Sec title="⚡ Consider Selling" cards={ranked.filter(function(x){return x._hvs==="watch";})}/>
+      <Sec title="⏳ Hold" cards={ranked.filter(function(x){return x._hvs==="hold";})}/>
+      <Sec title="🔴 Underwater" cards={ranked.filter(function(x){return x._hvs==="underwater";})}/>
+      <Sec title="❓ No Price Data" cards={ranked.filter(function(x){return x._hvs==="unknown";})}/>
+    </div>
+  );
+}
+
+function WatchlistView(p){
+  var apiKey=p.apiKey,watchlist=p.watchlist,setWatchlist=p.setWatchlist,toast=p.toast;
+  var [query,setQuery]=useState("");
+  var [target,setTarget]=useState("");
+  var [checking,setChecking]=useState(null);
+  function add(){
+    if(!query.trim()){toast("Enter a card to watch","error");return;}
+    var item={id:uid(),query:query.trim(),targetPrice:parseFloat(target)||null,addedDate:new Date().toISOString().slice(0,10),lastSalePrice:null,lastSaleDate:null,avgRecentPrice:null,lowestAsk:null,verdict:null,verdictReason:null,lastChecked:null};
+    setWatchlist(watchlist.concat([item]));
+    lsSet("cv_watchlist",JSON.stringify(watchlist.concat([item])));
+    setQuery("");setTarget("");toast("Added","success");
+  }
+  async function check(id){
+    var item=watchlist.find(function(x){return x.id===id;});
+    if(!item)return;
+    setChecking(id);
+    try{
+      var r=await lookupWatchlist(apiKey,item.query);
+      if(r){
+        var updated=watchlist.map(function(x){return x.id===id?Object.assign({},x,r,{lastChecked:new Date().toISOString().slice(0,10)}):x;});
+        setWatchlist(updated);lsSet("cv_watchlist",JSON.stringify(updated));
+        toast("Updated","success");
+      }else toast("No data found","error");
+    }catch(e){toast("Error: "+e.message,"error");}
+    setChecking(null);
+  }
+  function remove(id){
+    var u=watchlist.filter(function(x){return x.id!==id;});
+    setWatchlist(u);lsSet("cv_watchlist",JSON.stringify(u));
+  }
+  var vMap={good_buy:{bg:"#e8f5ee",c:C.green,l:"✅ Good Buy"},fair:{bg:"#fff8ee",c:C.amber,l:"⚡ Fair"},overpriced:{bg:"#fdecea",c:C.red,l:"❌ Overpriced"},unknown:{bg:C.surface,c:C.muted,l:"— Unknown"}};
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.border}}>
+        <div style={{fontSize:15,fontWeight:800,marginBottom:12}}>👀 Add to Watchlist</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+          <Fld l="Card description" s2={true}><Inp value={query} onChange={function(e){setQuery(e.target.value);}} placeholder="e.g. 2023 Panini Prizm Mahomes PSA 10"/></Fld>
+          <Fld l="Target Buy Price"><Inp type="number" step="0.01" value={target} onChange={function(e){setTarget(e.target.value);}} placeholder="e.g. 150.00"/></Fld>
+          <div style={{display:"flex",gap:8}}>
+            <button style={BG} onClick={add}>+ Add</button>
+            {watchlist.length>0&&<button style={BO} onClick={function(){watchlist.forEach(function(i){check(i.id);});}}>🔄 Check All</button>}
+          </div>
+        </div>
+      </div>
+      {!watchlist.length&&<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:28,marginBottom:10}}>👀</div><div style={{fontWeight:700}}>No cards on watchlist</div></div>}
+      {watchlist.map(function(item){
+        var vc=vMap[item.verdict]||vMap.unknown;
+        var below=item.targetPrice&&item.lastSalePrice&&item.lastSalePrice<=item.targetPrice;
+        return(
+          <div key={item.id} style={{background:C.card,borderRadius:12,padding:"14px 16px",marginBottom:10,border:"1px solid "+(below?C.green:C.border)}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
+              <div style={{flex:1}}>
+                {below&&<div style={{marginBottom:6}}><Badge bg={C.green} c="#fff" t="🎯 AT OR BELOW TARGET"/></div>}
+                <div style={{fontSize:15,fontWeight:800}}>{item.query}</div>
+                <div style={{fontSize:11,color:C.muted,marginTop:2}}>Added {fmtDate(item.addedDate)}{item.lastChecked?" · Checked "+fmtDate(item.lastChecked):""}</div>
+              </div>
+              <div style={{display:"flex",gap:8,marginLeft:10}}>
+                <button onClick={function(){check(item.id);}} disabled={checking===item.id} style={{...BO,padding:"5px 10px",fontSize:11}}>{checking===item.id?"…":"🔄"}</button>
+                <button onClick={function(){remove(item.id);}} style={{...BD,padding:"5px 10px",fontSize:11}}>✕</button>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
+              {[["Last Sale",fmtMoney(item.lastSalePrice)],["Avg Recent",fmtMoney(item.avgRecentPrice)],["Lowest Ask",fmtMoney(item.lowestAsk)],["Target",fmtMoney(item.targetPrice)]].map(function(it){
+                return(<div key={it[0]} style={{background:C.surface,borderRadius:8,padding:"8px 10px"}}><div style={{fontSize:9,fontWeight:700,letterSpacing:1,textTransform:"uppercase",color:C.muted,marginBottom:4}}>{it[0]}</div><div style={{fontSize:14,fontWeight:800}}>{it[1]}</div></div>);
+              })}
+            </div>
+            {item.verdict&&<div style={{padding:"8px 12px",borderRadius:8,background:vc.bg,display:"flex",alignItems:"center",gap:10}}><span style={{fontSize:11,fontWeight:700,color:vc.c}}>{vc.l}</span>{item.verdictReason&&<span style={{fontSize:11,color:C.muted}}>— {item.verdictReason}</span>}</div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CardForm(p){
+  var card=p.card,upd=p.upd;
+  var G={display:"grid",gridTemplateColumns:"1fr 1fr",gap:12};
+  return(
+    <div>
+      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Card Identity</div>
+      <div style={G}>
+        <Fld l="Player Name *"><Inp value={card.playerName} onChange={function(e){upd("playerName",e.target.value);}} placeholder="e.g. Patrick Mahomes"/></Fld>
+        <Fld l="Year"><Inp value={card.year} onChange={function(e){upd("year",e.target.value);}} placeholder="e.g. 2024"/></Fld>
+        <Fld l="Brand"><Sel value={card.brand} onChange={function(e){upd("brand",e.target.value);}}><option value="">Select…</option>{BRANDS.map(function(b){return <option key={b}>{b}</option>;})}</Sel></Fld>
+        <Fld l="Set"><Inp value={card.set} onChange={function(e){upd("set",e.target.value);}} placeholder="e.g. Prizm"/></Fld>
+      </div>
+      <HR/>
+      <div style={{display:"flex",flexWrap:"wrap",gap:14,marginBottom:12}}>
+        {[["isRookie","Rookie Card"],["isAuto","Auto"],["isPatch","Patch/Relic"],["isSerialNumbered","Serial Numbered"]].map(function(item){
+          return(<label key={item[0]} style={{display:"flex",alignItems:"center",gap:7,fontSize:13,cursor:"pointer"}}><input type="checkbox" checked={!!card[item[0]]} onChange={function(e){upd(item[0],e.target.checked);}} style={{accentColor:C.gold,width:15,height:15}}/>{item[1]}</label>);
+        })}
+      </div>
+      {card.isSerialNumbered&&<div style={{marginBottom:12}}><Fld l="Print Run"><Inp type="number" value={card.printRun} onChange={function(e){upd("printRun",e.target.value);}} placeholder="e.g. 25" style={{maxWidth:130}}/></Fld></div>}
+      <HR/>
+      <div style={G}>
+        <Fld l="Grading Company"><Sel value={card.gradingCompany} onChange={function(e){upd("gradingCompany",e.target.value);}}>{GCS.map(function(g){return <option key={g}>{g}</option>;})}</Sel></Fld>
+        <Fld l="Grade *"><Inp value={card.grade} onChange={function(e){upd("grade",e.target.value);}} placeholder="e.g. 10"/></Fld>
+        <Fld l="Cert Number" s2={true}><Inp value={card.certNumber} onChange={function(e){upd("certNumber",e.target.value);}} placeholder="Cert #"/></Fld>
+      </div>
+      {card.gradingCompany==="BGS"&&<div style={{...G,marginTop:12}}>{[["bgsCenter","Centering"],["bgsCorners","Corners"],["bgsEdges","Edges"],["bgsSurface","Surface"]].map(function(item){return <Fld key={item[0]} l={"BGS "+item[1]}><Inp value={card[item[0]]} onChange={function(e){upd(item[0],e.target.value);}} placeholder="9.5"/></Fld>;})}</div>}
+      <HR/>
+      <div style={G}>
+        <Fld l="Purchase Price"><Inp type="number" step="0.01" value={card.purchasePrice} onChange={function(e){upd("purchasePrice",e.target.value);}} placeholder="0.00"/></Fld>
+        <Fld l="Purchase Date"><Inp type="date" value={card.purchaseDate} onChange={function(e){upd("purchaseDate",e.target.value);}} /></Fld>
+        <Fld l="Where Purchased" s2={true}><Sel value={card.wherePurchased} onChange={function(e){upd("wherePurchased",e.target.value);}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+      </div>
+      <HR/>
+      <Fld l="Notes"><textarea style={{...INP,minHeight:60,resize:"vertical"}} value={card.notes} onChange={function(e){upd("notes",e.target.value);}} placeholder="Any notes…"/></Fld>
+    </div>
+  );
+}
+
+function InventoryView(p){
+  var cards=p.cards,onAdd=p.onAdd,onSell=p.onSell,onView=p.onView,mode=p.mode,readOnly=p.readOnly,ownerName=p.ownerName,onBulkSave=p.onBulkSave;
+  var search=p.search,setSearch=p.setSearch,fAlert=p.fAlert,setFAlert=p.setFAlert,fStatus=p.fStatus,setFStatus=p.setFStatus;
+  var [showF,setShowF]=useState(false);
+  var [fGC,setFGC]=useState("all");
+  var [fGrade,setFGrade]=useState("all");
+  var [fBrand,setFBrand]=useState("all");
+  var [fRC,setFRC]=useState("all");
+  var [fAuto,setFAuto]=useState("all");
+  var [fPatch,setFPatch]=useState("all");
+  var [fMinP,setFMinP]=useState("");
+  var [fMaxP,setFMaxP]=useState("");
+  var [fMinL,setFMinL]=useState("");
+  var [fMaxL,setFMaxL]=useState("");
+  var [sField,setSField]=useState("playerName");
+  var [sDir,setSDir]=useState("asc");
+  var [bulkMode,setBulkMode]=useState(false);
+  var [bulkPrices,setBulkPrices]=useState({});
+  var [bulkDates,setBulkDates]=useState({});
+  var allGrades=useMemo(function(){var s=new Set();cards.forEach(function(c){if(c.grade)s.add(c.grade);});return Array.from(s).sort(function(a,b){return parseFloat(b)-parseFloat(a);});},[cards]);
+  var allBrands=useMemo(function(){var s=new Set();cards.forEach(function(c){if(c.brand)s.add(c.brand);});return Array.from(s).sort();},[cards]);
+  var afc=[fGC,fGrade,fBrand,fRC,fAuto,fPatch].filter(function(v){return v!=="all";}).length+(fMinP?1:0)+(fMaxP?1:0)+(fMinL?1:0)+(fMaxL?1:0)+(fAlert!=="all"?1:0)+(fStatus!=="all"?1:0);
+  function clearF(){setFGC("all");setFGrade("all");setFBrand("all");setFRC("all");setFAuto("all");setFPatch("all");setFMinP("");setFMaxP("");setFMinL("");setFMaxL("");setFAlert("all");setFStatus("all");setSearch("");}
+  var rows=useMemo(function(){
+    var r=cards.slice();
+    if(search){var q=search.toLowerCase();r=r.filter(function(x){return(x.playerName||"").toLowerCase().includes(q)||(String(x.year||"")).includes(q)||(x.brand||"").toLowerCase().includes(q)||(x.set||"").toLowerCase().includes(q)||(x.certNumber||"").toLowerCase().includes(q);});}
+    if(fAlert!=="all")r=r.filter(function(x){return x.alertStatus===fAlert;});
+    if(fStatus!=="all")r=r.filter(function(x){return x.cardStatus===fStatus;});
+    if(fGC!=="all")r=r.filter(function(x){return x.gradingCompany===fGC;});
+    if(fGrade!=="all")r=r.filter(function(x){return x.grade===fGrade;});
+    if(fBrand!=="all")r=r.filter(function(x){return x.brand===fBrand;});
+    if(fRC!=="all")r=r.filter(function(x){return fRC==="yes"?!!x.isRookie:!x.isRookie;});
+    if(fAuto!=="all")r=r.filter(function(x){return fAuto==="yes"?!!x.isAuto:!x.isAuto;});
+    if(fPatch!=="all")r=r.filter(function(x){return fPatch==="yes"?!!x.isPatch:!x.isPatch;});
+    if(fMinP)r=r.filter(function(x){return parseFloat(x.purchasePrice||0)>=parseFloat(fMinP);});
+    if(fMaxP)r=r.filter(function(x){return parseFloat(x.purchasePrice||0)<=parseFloat(fMaxP);});
+    if(fMinL)r=r.filter(function(x){return x.lastSalePrice&&parseFloat(x.lastSalePrice)>=parseFloat(fMinL);});
+    if(fMaxL)r=r.filter(function(x){return x.lastSalePrice&&parseFloat(x.lastSalePrice)<=parseFloat(fMaxL);});
+    r.sort(function(a,b){
+      var av,bv;
+      if(sField==="purchasePrice"||sField==="lastSalePrice"){av=parseFloat(a[sField]||0);bv=parseFloat(b[sField]||0);}
+      else if(sField==="grade"){av=parseFloat(a.grade||0);bv=parseFloat(b.grade||0);}
+      else{av=(a[sField]||"").toLowerCase();bv=(b[sField]||"").toLowerCase();}
+      if(av<bv)return sDir==="asc"?-1:1;
+      if(av>bv)return sDir==="asc"?1:-1;
+      return 0;
+    });
+    return r;
+  },[cards,search,fAlert,fStatus,fGC,fGrade,fBrand,fRC,fAuto,fPatch,fMinP,fMaxP,fMinL,fMaxL,sField,sDir]);
+  function SBtn(sp){
+    var active=sField===sp.f;
+    return <button onClick={function(){if(active)setSDir(function(d){return d==="asc"?"desc":"asc";});else{setSField(sp.f);setSDir("asc");};}} style={{padding:"3px 8px",fontSize:10,fontWeight:700,cursor:"pointer",border:"1px solid "+(active?C.gold:C.border),borderRadius:4,background:active?C.goldBg:"transparent",color:active?C.gold:C.muted}}>{sp.l}{active?(sDir==="asc"?" ↑":" ↓"):""}</button>;
+  }
+  function saveBulk(){
+    var updates={};
+    Object.keys(bulkPrices).forEach(function(id){if(bulkPrices[id])updates[id]={lastSalePrice:parseFloat(bulkPrices[id]),lastSaleDate:bulkDates[id]||new Date().toISOString().slice(0,10)};});
+    onBulkSave(updates);setBulkPrices({});setBulkDates({});setBulkMode(false);
+  }
+  return(
+    <div style={{padding:16,maxWidth:860,margin:"0 auto"}}>
+      {readOnly&&<div style={{background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:8,padding:"10px 14px",fontSize:12,color:C.amber,marginBottom:14,textAlign:"center",fontWeight:600}}>👁 Viewing {ownerName}'s collection — read only</div>}
+      <div style={{display:"flex",gap:10,marginBottom:10}}>
+        <input style={{...INP,flex:1}} placeholder="Search player, year, brand, set, cert…" value={search} onChange={function(e){setSearch(e.target.value);}}/>
+        <button onClick={function(){setShowF(function(v){return !v;});}} style={{padding:"9px 14px",borderRadius:7,fontSize:12,fontWeight:700,cursor:"pointer",border:"1px solid "+(afc>0?C.gold:C.border),background:afc>0?C.goldBg:"transparent",color:afc>0?C.gold:C.muted,whiteSpace:"nowrap"}}>🔽 Filters{afc>0?" ("+afc+")":""}</button>
+        {afc>0&&<button onClick={clearF} style={{padding:"9px 12px",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer",border:"1px solid "+C.border,background:"transparent",color:C.red}}>✕</button>}
+      </div>
+      {showF&&(
+        <div style={{background:C.card,border:"1px solid "+C.border,borderRadius:10,padding:16,marginBottom:14}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:10,marginBottom:14}}>
+            <div><div style={LBL}>Alert</div><select style={INP} value={fAlert} onChange={function(e){setFAlert(e.target.value);}}><option value="all">All</option><option value="normal">Normal</option><option value="time_to_sell">Time to Sell</option><option value="urgent_sale">Urgent Sale</option></select></div>
+            <div><div style={LBL}>Status</div><select style={INP} value={fStatus} onChange={function(e){setFStatus(e.target.value);}}><option value="all">All</option><option value="inventory">In Inventory</option><option value="sold">Sold</option><option value="consigned">Consigned</option><option value="grading">Grading</option></select></div>
+            <div><div style={LBL}>Grading Co</div><select style={INP} value={fGC} onChange={function(e){setFGC(e.target.value);}}><option value="all">All</option>{GCS.map(function(g){return <option key={g}>{g}</option>;})}</select></div>
+            <div><div style={LBL}>Grade</div><select style={INP} value={fGrade} onChange={function(e){setFGrade(e.target.value);}}><option value="all">All</option>{allGrades.map(function(g){return <option key={g}>{g}</option>;})}</select></div>
+            <div><div style={LBL}>Brand</div><select style={INP} value={fBrand} onChange={function(e){setFBrand(e.target.value);}}><option value="all">All</option>{allBrands.map(function(b){return <option key={b}>{b}</option>;})}</select></div>
+            <div><div style={LBL}>Rookie</div><select style={INP} value={fRC} onChange={function(e){setFRC(e.target.value);}}><option value="all">All</option><option value="yes">RC Only</option><option value="no">Non-RC</option></select></div>
+            <div><div style={LBL}>Auto</div><select style={INP} value={fAuto} onChange={function(e){setFAuto(e.target.value);}}><option value="all">All</option><option value="yes">Auto Only</option><option value="no">No Auto</option></select></div>
+            <div><div style={LBL}>Patch</div><select style={INP} value={fPatch} onChange={function(e){setFPatch(e.target.value);}}><option value="all">All</option><option value="yes">Patch Only</option><option value="no">No Patch</option></select></div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(155px,1fr))",gap:10,marginBottom:14}}>
+            <div><div style={LBL}>Min Cost</div><input style={INP} type="number" placeholder="$ min" value={fMinP} onChange={function(e){setFMinP(e.target.value);}}/></div>
+            <div><div style={LBL}>Max Cost</div><input style={INP} type="number" placeholder="$ max" value={fMaxP} onChange={function(e){setFMaxP(e.target.value);}}/></div>
+            <div><div style={LBL}>Min Last Sale</div><input style={INP} type="number" placeholder="$ min" value={fMinL} onChange={function(e){setFMinL(e.target.value);}}/></div>
+            <div><div style={LBL}>Max Last Sale</div><input style={INP} type="number" placeholder="$ max" value={fMaxL} onChange={function(e){setFMaxL(e.target.value);}}/></div>
+          </div>
+          <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:8}}>Sort By</div>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {[["playerName","Player"],["year","Year"],["brand","Brand"],["gradingCompany","Grading Co"],["grade","Grade"],["purchasePrice","Cost"],["lastSalePrice","Last Sale"],["alertStatus","Alert"]].map(function(item){return <SBtn key={item[0]} f={item[0]} l={item[1]}/>;}) }
+          </div>
+        </div>
+      )}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+        <div style={{fontSize:11,color:C.muted}}>{rows.length} of {cards.length} card{cards.length!==1?"s":""}{afc>0?" (filtered)":""}</div>
+        {!readOnly&&(
+          <div style={{display:"flex",gap:8}}>
+            <button style={{...BG,padding:"8px 14px",fontSize:12,background:mode==="sell"?C.red:C.gold}} onClick={onAdd}>{mode==="sell"?"− Sell Card":"+ Add Card"}</button>
+            <button style={{...BO,padding:"8px 14px",fontSize:12,color:bulkMode?C.gold:C.muted,borderColor:bulkMode?C.gold:C.border}} onClick={function(){setBulkMode(function(v){return !v;});}}>✏ Bulk Price</button>
+          </div>
+        )}
+      </div>
+      {bulkMode&&!readOnly&&(
+        <div style={{background:C.card,borderRadius:12,padding:"16px 18px",marginBottom:16,border:"1px solid "+C.gold}}>
+          <div style={{fontSize:13,fontWeight:700,marginBottom:4}}>Bulk Last Sale Update</div>
+          <div style={{fontSize:11,color:C.muted,marginBottom:14}}>Enter last sale prices. Leave blank to skip.</div>
+          {rows.filter(function(x){return x.cardStatus==="inventory";}).map(function(x){
+            return(
+              <div key={x.id} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:10,marginBottom:10,alignItems:"center"}}>
+                <div><div style={{fontSize:13,fontWeight:700}}>{x.playerName}</div><div style={{fontSize:10,color:C.muted}}>{x.gradingCompany} {x.grade} · {fmtMoney(x.purchasePrice)}</div></div>
+                <Inp type="number" step="0.01" placeholder="Last sale $" value={bulkPrices[x.id]||""} onChange={function(e){var v=e.target.value;setBulkPrices(function(prev){var n=Object.assign({},prev);n[x.id]=v;return n;});}}/>
+                <Inp type="date" value={bulkDates[x.id]||new Date().toISOString().slice(0,10)} onChange={function(e){var v=e.target.value;setBulkDates(function(prev){var n=Object.assign({},prev);n[x.id]=v;return n;});}}/>
+              </div>
+            );
+          })}
+          <div style={{display:"flex",gap:10,marginTop:10}}>
+            <button style={BG} onClick={saveBulk}>Save All Prices</button>
+            <button style={BO} onClick={function(){setBulkMode(false);setBulkPrices({});setBulkDates({});}}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {!rows.length?(
+        <div style={{textAlign:"center",padding:48,color:C.muted}}>
+          <div style={{fontSize:32,marginBottom:12}}>🔍</div>
+          <div style={{fontWeight:700,fontSize:16,marginBottom:12}}>{cards.length===0?"No cards yet":"No results"}</div>
+          {!cards.length&&!readOnly&&<button style={BG} onClick={onAdd}>+ Add your first card</button>}
+        </div>
+      ):rows.map(function(x){
+        var pnl=x.purchasePrice&&(x.estimatedValue||x.lastSalePrice)?(x.estimatedValue||x.lastSalePrice)-x.purchasePrice:null;
+        var pnlPct=x.purchasePrice&&pnl!=null?pnl/x.purchasePrice*100:null;
+        var ac=x.alertStatus==="urgent_sale"?C.red:x.alertStatus==="time_to_sell"?C.amber:null;
+        return(
+          <div key={x.id} style={{background:C.card,border:"1px solid "+(ac||C.border),borderRadius:12,padding:"14px 16px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",gap:6,marginBottom:4,flexWrap:"wrap"}}><HoldBadge card={x}/>{ac&&<Badge bg={ac} c="#fff" t={x.alertStatus==="urgent_sale"?"URGENT":"ALERT"}/>}</div>
+                <div style={{fontSize:17,fontWeight:800}}>{x.playerName||"—"}</div>
+                <div style={{fontSize:12,color:C.muted,marginTop:2}}>{x.year} {x.brand} · {x.set}</div>
+                {x.certNumber&&<div style={{fontSize:11,color:C.muted,opacity:.7,marginTop:1}}>Cert #{x.certNumber}</div>}
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:4,background:C.surface,border:"1px solid "+C.border,borderRadius:5,padding:"3px 10px",flexShrink:0}}>
+                <span style={{fontSize:10,fontWeight:700,color:C.muted}}>{x.gradingCompany}</span>
+                <span style={{fontSize:20,fontWeight:800,color:C.gold}}>{x.grade}</span>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:8}}>
+              {x.isRookie&&<Badge bg="#dbeafe" c="#1d4ed8" t="RC"/>}
+              {x.isAuto&&<Badge bg="#f3e8ff" c="#7c3aed" t="AUTO"/>}
+              {x.isPatch&&<Badge bg="#dcfce7" c="#15803d" t="PATCH"/>}
+              {x.isSerialNumbered&&<Badge bg={C.goldBg} c={C.gold} t={"/"+x.printRun}/>}
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:8}}>
+              <div style={{fontSize:12,color:C.muted}}>
+                Cost <strong style={{color:C.text}}>{fmtMoney(x.purchasePrice)}</strong>
+                {x.lastSalePrice&&<span> · Last <strong style={{color:C.text}}>{fmtMoney(x.lastSalePrice)}</strong></span>}
+                {pnl!=null&&<span> · <strong style={{color:pnl>=0?C.green:C.red}}>{fmtMoney(pnl)} ({fmtPct(pnlPct)})</strong></span>}
+              </div>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={function(){onView(x);}} style={{...BO,padding:"6px 12px",fontSize:12}}>View</button>
+                {!readOnly&&x.cardStatus==="inventory"&&mode==="sell"&&<button onClick={function(){onSell(x);}} style={{...BD,padding:"6px 12px",fontSize:12}}>Sell</button>}
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
+              <div style={{width:7,height:7,borderRadius:"50%",background:x.cardStatus==="inventory"?"#22c55e":x.cardStatus==="sold"?C.muted:x.cardStatus==="consigned"?"#60a5fa":C.amber}}></div>
+              <span style={{fontSize:11,color:C.muted}}>{STATUS_LBL[x.cardStatus||"inventory"]}{x.cardStatus==="sold"&&x.salePrice?" · Sold "+fmtMoney(x.salePrice):""}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function AddModal(p){
+  var apiKey=p.apiKey,mode=p.mode,myCards=p.myCards,onAdd=p.onAdd,onSellBulk=p.onSellBulk,onAddAndSell=p.onAddAndSell,onClose=p.onClose,toast=p.toast;
+  var [tab,setTab]=useState("photo");
+  var [img,setImg]=useState(null);
+  var [b64,setB64]=useState(null);
+  var [mime,setMime]=useState(null);
+  var [imgInfo,setImgInfo]=useState("");
+  var [busy,setBusy]=useState(false);
+  var [status,setStatus]=useState("");
+  var [identified,setIdentified]=useState([]);
+  var [pci,setPci]=useState([]);
+  var [dups,setDups]=useState([]);
+  var [dupConf,setDupConf]=useState({});
+  var [matched,setMatched]=useState([]);
+  var [form,setForm]=useState(Object.assign({},BLANK));
+  var [saleInfo,setSaleInfo]=useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var [selIds,setSelIds]=useState({});
+  var [addSell,setAddSell]=useState({});
+  var [addSellInfo,setAddSellInfo]=useState({});
+  var fileRef=useRef();
+  function upd(k,v){setForm(function(prev){return Object.assign({},prev,{[k]:v});});}
+  function handleFile(f){
+    if(!f)return;
+    setStatus("Compressing…");
+    var r=new FileReader();
+    r.onload=async function(e){
+      var raw=e.target.result;setImg(raw);
+      try{
+        var c1=await compressImg(raw,900,0.78);
+        var fb=c1.b64,sz=Math.round(c1.b64.length*0.75/1024);
+        if(sz>350){var c2=await compressImg(raw,600,0.65);fb=c2.b64;sz=Math.round(c2.b64.length*0.75/1024);}
+        setB64(fb);setMime("image/jpeg");setImgInfo(c1.w+"×"+c1.h+"px · ~"+sz+"KB");setStatus("Ready");
+      }catch(err){setB64(raw.split(",")[1]);setMime(f.type||"image/jpeg");setStatus("Ready");}
+    };
+    r.readAsDataURL(f);
+  }
+  async function doIdentify(){
+    if(!b64)return;
+    setBusy(true);setStatus("Reading labels…");
+    try{
+      var cards=await identifyCards(apiKey,b64,mime);
+      if(!cards.length){setStatus("No graded cards found");setBusy(false);return;}
+      setStatus("Found "+cards.length+" card"+(cards.length!==1?"s":"")+"!");
+      if(mode==="sell"){
+        var m=cards.map(function(id){
+          var match=myCards.find(function(c){
+            if(c.cardStatus!=="inventory")return false;
+            var nc=String(id.certNumber||"").trim(),ec=String(c.certNumber||"").trim();
+            if(nc&&ec)return nc===ec;
+            return(id.playerName||"").toLowerCase().includes((c.playerName||"").toLowerCase());
+          })||null;
+          return Object.assign({},id,{match:match});
+        });
+        setMatched(m);
+        var s={};m.forEach(function(x){if(x.match)s[x.match.id]=true;});setSelIds(s);
+      }else{
+        setIdentified(cards);
+        setPci(cards.map(function(){return{purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:"",grade:"",gradingCompany:"",certNumber:""};} ));
+        setDups(checkDups(cards,myCards));
+        setDupConf({});
+      }
+    }catch(e){setStatus("Error: "+e.message);toast("Error: "+e.message,"error");}
+    setBusy(false);
+  }
+  function doAddAll(){
+    var blocked=[],toAdd=[];
+    identified.forEach(function(x,i){
+      var info=pci[i]||{};
+      var dup=dups[i];
+      if(dup&&dup.existing){
+        if(dup.status==="inventory"){blocked.push(x.playerName||"Card");return;}
+        if(dup.status==="sold"&&!dupConf[x.certNumber||i])return;
+      }
+      toAdd.push(Object.assign({},BLANK,x,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null,
+        purchasePrice:info.purchasePrice||"",purchaseDate:info.purchaseDate||new Date().toISOString().slice(0,10),wherePurchased:info.wherePurchased||"",
+        grade:info.grade||x.grade,gradingCompany:info.gradingCompany||x.gradingCompany,certNumber:info.certNumber||x.certNumber}));
+    });
+    if(blocked.length)toast(blocked.join(", ")+" already in inventory — skipped","error");
+    if(toAdd.length){onAdd(toAdd);if(!blocked.length)onClose();}
+  }
+  function doSellMatched(){
+    var ids=Object.keys(selIds).filter(function(k){return selIds[k];});
+    var asc=matched.filter(function(m){return !m.match&&addSell[m.playerName+m.grade];});
+    if(!ids.length&&!asc.length){toast("Select at least one card","error");return;}
+    if(!saleInfo.price){toast("Enter a sale price","error");return;}
+    if(asc.length){
+      var toAdd=asc.map(function(m){
+        var info=addSellInfo[m.playerName+m.grade]||{};
+        return Object.assign({},BLANK,m,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null,purchasePrice:info.purchasePrice||"",purchaseDate:info.purchaseDate||new Date().toISOString().slice(0,10),wherePurchased:""});
+      });
+      onAddAndSell(toAdd,saleInfo);
+    }
+    if(ids.length)onSellBulk(ids,saleInfo);
+    onClose();
+  }
+  function doAddManual(){
+    if(!form.playerName||!form.grade){toast("Player name and grade required","error");return;}
+    var d=checkDups([form],myCards);var dup=d[0];
+    if(dup.existing){
+      if(dup.status==="inventory"){toast("Already in active inventory","error");return;}
+      if(dup.status==="sold"&&!dupConf["manual"]){setDups(d);setDupConf({});return;}
+    }
+    onAdd([Object.assign({},form,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null})]);
+    onClose();
+  }
+  var selCount=Object.keys(selIds).filter(function(k){return selIds[k];}).length+Object.keys(addSell).length;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:560,marginTop:20,overflow:"hidden",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{mode==="sell"?"Sell Cards":"Add Cards"}</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto"}}>
+          {mode==="buy"&&(
+            <div style={{display:"flex",borderBottom:"1px solid "+C.border,marginBottom:18}}>
+              {[["photo","📷 Photo"],["manual","📝 Manual"]].map(function(item){
+                return <button key={item[0]} onClick={function(){setTab(item[0]);}} style={{padding:"10px 18px",fontSize:12,fontWeight:700,cursor:"pointer",border:"none",background:"transparent",color:tab===item[0]?C.gold:C.muted,borderBottom:tab===item[0]?"2px solid "+C.gold:"2px solid transparent"}}>{item[1]}</button>;
+              })}
+            </div>
+          )}
+          {(tab==="photo"||mode==="sell")&&(
+            <div>
+              {!img?(
+                <div onClick={function(){fileRef.current.click();}} style={{border:"2px dashed "+C.border,borderRadius:12,padding:36,textAlign:"center",cursor:"pointer"}}>
+                  <div style={{fontSize:44,marginBottom:12}}>📷</div>
+                  <div style={{fontSize:15,color:C.muted,fontWeight:700}}>Tap to upload photo</div>
+                  <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={function(e){handleFile(e.target.files[0]);}}/>
+                </div>
+              ):(
+                <div>
+                  <img src={img} style={{width:"100%",maxHeight:240,objectFit:"contain",borderRadius:10,border:"1px solid "+C.border,marginBottom:10}} alt="Cards"/>
+                  {imgInfo&&<div style={{fontSize:11,color:C.muted,textAlign:"center",marginBottom:6}}>{imgInfo}</div>}
+                  {status&&<div style={{fontSize:12,fontWeight:700,textAlign:"center",marginBottom:12,padding:"7px 12px",borderRadius:6,background:status.startsWith("Error")?C.red+"22":C.gold+"22",color:status.startsWith("Error")?C.red:C.gold}}>{status}</div>}
+                  <div style={{display:"flex",gap:10,marginBottom:16}}>
+                    <button style={BO} onClick={function(){setImg(null);setB64(null);setIdentified([]);setMatched([]);setStatus("");setImgInfo("");setDups([]);setAddSell({});}}>🗑 Clear</button>
+                    <button style={{...BG,flex:1,justifyContent:"center",opacity:busy?0.5:1}} onClick={doIdentify} disabled={busy}>{busy?"Reading labels…":"Identify Cards"}</button>
+                  </div>
+                  {mode==="buy"&&identified.length>0&&(
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Identified {identified.length} card{identified.length!==1?"s":""}— check grade and cert #</div>
+                      {identified.map(function(x,i){
+                        var info=pci[i]||{};
+                        var dup=dups[i];
+                        var isInv=dup&&dup.existing&&dup.status==="inventory";
+                        var isSold=dup&&dup.existing&&dup.status==="sold";
+                        var conf=dupConf[x.certNumber||i];
+                        var unclear=x._unclear||[];
+                        return(
+                          <div key={i} style={{background:isInv?"#fdecea":isSold&&!conf?"#fff8ee":C.surface,borderRadius:10,padding:"12px 14px",marginBottom:10,border:"1px solid "+(isInv?C.red:isSold&&!conf?C.amber:C.border)}}>
+                            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}}>
+                              <div style={{fontSize:14,fontWeight:800}}>{x.playerName}</div>
+                              {isInv&&<Badge bg={C.red} c="#fff" t="DUPLICATE — BLOCKED"/>}
+                              {isSold&&!conf&&<Badge bg={C.amber} c="#fff" t="PREVIOUSLY SOLD"/>}
+                              {isSold&&conf&&<Badge bg={C.green} c="#fff" t="CONFIRMED"/>}
+                            </div>
+                            {isInv&&<div style={{fontSize:11,color:C.red,marginBottom:6}}>Already in active inventory. Will not be added.</div>}
+                            {isSold&&!conf&&(
+                              <div style={{marginBottom:8}}>
+                                <div style={{fontSize:11,color:C.amber,marginBottom:6}}>Previously sold for {fmtMoney(dup.existing.salePrice)}. Buying back?</div>
+                                <div style={{display:"flex",gap:8}}>
+                                  <button style={{...BG,padding:"4px 10px",fontSize:11}} onClick={function(){var k=x.certNumber||i;setDupConf(function(prev){var n=Object.assign({},prev);n[k]=true;return n;});}}>Yes, Add It</button>
+                                  <button style={{...BO,padding:"4px 10px",fontSize:11}} onClick={function(){var k=x.certNumber||i;setDupConf(function(prev){var n=Object.assign({},prev);n[k]=false;return n;});}}>No, Skip</button>
+                                </div>
+                              </div>
+                            )}
+                            {unclear.length>0&&(
+                              <div style={{background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:6,padding:"7px 10px",marginBottom:8}}>
+                                <div style={{fontWeight:700,color:C.amber,fontSize:11,marginBottom:2}}>⚠ Unclear — please verify: {unclear.join(", ")}</div>
+                              </div>
+                            )}
+                            {!isInv&&(
+                              <div>
+                                <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:8}}>
+                                  <div style={{display:"flex",alignItems:"center",gap:4,background:unclear.includes("grade")?C.amber+"22":C.card,border:"1px solid "+(unclear.includes("grade")?C.amber:C.border),borderRadius:5,padding:"2px 8px"}}>
+                                    <span style={{fontSize:10,fontWeight:700,color:C.muted}}>{x.gradingCompany||"?"}</span>
+                                    <span style={{fontSize:16,fontWeight:800,color:unclear.includes("grade")?C.amber:C.gold}}>{x.grade||"?"}</span>
+                                  </div>
+                                  <span style={{fontSize:11,color:unclear.includes("certNumber")||!x.certNumber?C.amber:C.muted,fontFamily:"monospace",fontWeight:unclear.includes("certNumber")||!x.certNumber?700:400}}>{x.certNumber?"Cert #"+x.certNumber:"Cert # unreadable"}</span>
+                                  {x.isRookie&&<Badge bg="#dbeafe" c="#1d4ed8" t="RC"/>}
+                                  {x.isAuto&&<Badge bg="#f3e8ff" c="#7c3aed" t="AUTO"/>}
+                                </div>
+                                <div style={{fontSize:11,color:C.muted,marginBottom:8}}>{x.year} {x.brand} {x.set}</div>
+                                <div style={{fontSize:11,color:C.muted,cursor:"pointer",marginBottom:6}} onClick={function(){var k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{_showCorrect:!n[k]._showCorrect});return n;});}}>✏ Correct grade / cert # if wrong</div>
+                                {info._showCorrect&&(
+                                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8,paddingTop:8,borderTop:"1px solid "+C.border}}>
+                                    <Fld l="Grade"><Inp value={info.grade!==undefined?info.grade:x.grade||""} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{grade:v});return n;});}}/></Fld>
+                                    <Fld l="Grading Co"><Sel value={info.gradingCompany||x.gradingCompany||"PSA"} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{gradingCompany:v});return n;});}}>
+                                      {GCS.map(function(g){return <option key={g}>{g}</option>;})}
+                                    </Sel></Fld>
+                                    <Fld l="Cert Number" s2={true}><Inp value={info.certNumber!==undefined?info.certNumber:x.certNumber||""} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{certNumber:v});return n;});}}/></Fld>
+                                  </div>
+                                )}
+                                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                                  <Fld l="Purchase Price"><Inp type="number" step="0.01" placeholder="0.00" value={info.purchasePrice||""} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{purchasePrice:v});return n;});}}/></Fld>
+                                  <Fld l="Purchase Date"><Inp type="date" value={info.purchaseDate||new Date().toISOString().slice(0,10)} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{purchaseDate:v});return n;});}}/></Fld>
+                                  <Fld l="Where" s2={true}><Sel value={info.wherePurchased||""} onChange={function(e){var v=e.target.value,k=i;setPci(function(prev){var n=prev.slice();n[k]=Object.assign({},n[k]||{},{wherePurchased:v});return n;});}}><option value="">Select…</option>{WHERE.map(function(w){return <option key={w}>{w}</option>;})}</Sel></Fld>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {mode==="sell"&&matched.length>0&&(
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Matched to inventory</div>
+                      {matched.map(function(m,i){
+                        var key=m.playerName+m.grade;
+                        var isAS=addSell[key];
+                        return(
+                          <div key={i} style={{background:C.surface,border:"1px solid "+(m.match?C.green:isAS?C.amber:C.red),borderRadius:8,padding:"10px 14px",marginBottom:8}}>
+                            <div style={{display:"flex",alignItems:"center",gap:10}}>
+                              {m.match&&<input type="checkbox" checked={!!selIds[m.match.id]} onChange={function(e){var id=m.match.id,chk=e.target.checked;setSelIds(function(prev){var n=Object.assign({},prev);n[id]=chk;return n;});}} style={{width:17,height:17,accentColor:C.gold}}/>}
+                              {!m.match&&isAS&&<span>✚</span>}
+                              {!m.match&&!isAS&&<span style={{color:C.red}}>✕</span>}
+                              <div style={{flex:1}}>
+                                <div style={{fontSize:15,fontWeight:800}}>{m.playerName}</div>
+                                <div style={{fontSize:11,color:C.muted}}>{m.gradingCompany} {m.grade}</div>
+                                {m.match&&<div style={{fontSize:11,color:C.green,marginTop:2}}>✓ Found · Cost {fmtMoney(m.match.purchasePrice)}</div>}
+                                {!m.match&&!isAS&&<div style={{fontSize:11,color:C.red,marginTop:2}}>Not in inventory</div>}
+                                {!m.match&&isAS&&<div style={{fontSize:11,color:C.amber,marginTop:2}}>Will be added then sold</div>}
+                              </div>
+                            </div>
+                            {!m.match&&!isAS&&(
+                              <div style={{padding:"8px 0 2px",display:"flex",gap:8,alignItems:"center"}}>
+                                <button style={{...BG,padding:"5px 12px",fontSize:11}} onClick={function(){setAddSell(function(prev){var n=Object.assign({},prev);n[key]=true;return n;});setAddSellInfo(function(prev){var n=Object.assign({},prev);n[key]={purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10)};return n;});}}>+ Add &amp; Sell</button>
+                                <span style={{fontSize:11,color:C.muted}}>or skip</span>
+                              </div>
+                            )}
+                            {!m.match&&isAS&&(
+                              <div style={{padding:"8px 0 0"}}>
+                                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:6}}>
+                                  <Fld l="What you paid (or $0)"><Inp type="number" step="0.01" placeholder="0.00" value={(addSellInfo[key]||{}).purchasePrice||""} onChange={function(e){var v=e.target.value;setAddSellInfo(function(prev){var n=Object.assign({},prev);n[key]=Object.assign({},n[key]||{},{purchasePrice:v});return n;});}}/></Fld>
+                                  <Fld l="Purchase Date"><Inp type="date" value={(addSellInfo[key]||{}).purchaseDate||new Date().toISOString().slice(0,10)} onChange={function(e){var v=e.target.value;setAddSellInfo(function(prev){var n=Object.assign({},prev);n[key]=Object.assign({},n[key]||{},{purchaseDate:v});return n;});}}/></Fld>
+                                </div>
+                                <button style={{...BO,padding:"4px 10px",fontSize:11}} onClick={function(){setAddSell(function(prev){var n=Object.assign({},prev);delete n[key];return n;});}}>✕ Skip instead</button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginTop:10}}>
+                        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                          <Fld l="Sale Price (total)"><Inp type="number" step="0.01" placeholder="0.00" value={saleInfo.price} onChange={function(e){setSaleInfo(function(prev){return Object.assign({},prev,{price:e.target.value});});}}/></Fld>
+                          <Fld l="Sale Date"><Inp type="date" value={saleInfo.date} onChange={function(e){setSaleInfo(function(prev){return Object.assign({},prev,{date:e.target.value});});}}/></Fld>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {tab==="manual"&&mode==="buy"&&(
+            <div>
+              <CardForm card={form} upd={upd}/>
+              {dups.length>0&&dups[0].existing&&dups[0].status==="sold"&&!dupConf["manual"]&&(
+                <div style={{background:"#fff8ee",border:"1px solid "+C.amber,borderRadius:10,padding:"14px 16px",marginTop:12}}>
+                  <div style={{fontSize:13,fontWeight:700,color:C.amber,marginBottom:6}}>⚠ Previously Sold Card</div>
+                  <div style={{fontSize:12,marginBottom:10}}>Previously sold for {fmtMoney(dups[0].existing.salePrice)}. Buying back?</div>
+                  <div style={{display:"flex",gap:10}}>
+                    <button style={{...BG,padding:"7px 16px",fontSize:12}} onClick={function(){setDupConf({manual:true});doAddManual();}}>Yes — Add It</button>
+                    <button style={{...BO,padding:"7px 16px",fontSize:12}} onClick={function(){setDups([]);onClose();}}>No — Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          {mode==="buy"&&tab==="photo"&&identified.length>0&&<button style={BG} onClick={doAddAll}>+ Add {identified.length} Card{identified.length!==1?"s":""}</button>}
+          {mode==="buy"&&tab==="manual"&&!(dups.length>0&&dups[0].existing&&dups[0].status==="sold"&&!dupConf["manual"])&&<button style={BG} onClick={doAddManual}>+ Add Card</button>}
+          {mode==="sell"&&matched.length>0&&<button style={BD} onClick={doSellMatched}>💰 Mark {selCount} Sold</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SellModal(p){
+  var card=p.card,onSell=p.onSell,onClose=p.onClose;
+  var [sd,setSd]=useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var profit=sd.price&&card.purchasePrice?parseFloat(sd.price)-parseFloat(card.purchasePrice):null;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:420,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>Mark as Sold</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:18}}>
+            <div style={{fontSize:18,fontWeight:800}}>{card.playerName}</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:2}}>{card.gradingCompany} {card.grade} · Cost {fmtMoney(card.purchasePrice)}</div>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+            <Fld l="Sale Price *"><Inp type="number" step="0.01" placeholder="0.00" value={sd.price} onChange={function(e){setSd(function(prev){return Object.assign({},prev,{price:e.target.value});});}}/></Fld>
+            <Fld l="Sale Date"><Inp type="date" value={sd.date} onChange={function(e){setSd(function(prev){return Object.assign({},prev,{date:e.target.value});});}}/></Fld>
+          </div>
+          {profit!=null&&<div style={{padding:"12px 16px",borderRadius:10,background:profit>=0?"#e8f5ee":"#fdecea"}}><span style={{fontSize:18,fontWeight:800,color:profit>=0?C.green:C.red}}>{profit>=0?"+":""}{fmtMoney(profit)} ({fmtPct(card.purchasePrice?profit/parseFloat(card.purchasePrice)*100:null)})</span></div>}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          <button style={BD} onClick={function(){if(sd.price)onSell(sd);}}>Confirm Sale</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DetailModal(p){
+  var card=p.card,readOnly=p.readOnly,onClose=p.onClose,onUpdate=p.onUpdate,onDelete=p.onDelete;
+  var [editing,setEditing]=useState(false);
+  var [form,setForm]=useState(Object.assign({},card));
+  var [manualPrice,setManualPrice]=useState("");
+  var [manualDate,setManualDate]=useState(new Date().toISOString().slice(0,10));
+  function upd(k,v){setForm(function(prev){return Object.assign({},prev,{[k]:v});});}
+  var pnl=card.purchasePrice&&(card.estimatedValue||card.lastSalePrice)?(card.estimatedValue||card.lastSalePrice)-card.purchasePrice:null;
+  var searchUrl="https://www.130point.com/sales/?query="+encodeURIComponent((card.year||"")+" "+(card.brand||"")+" "+(card.set||"")+" "+(card.playerName||"")+" "+(card.gradingCompany||"")+" "+(card.grade||""));
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"flex-start",justifyContent:"center",padding:16,overflowY:"auto"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:520,marginTop:20,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{card.playerName}</div>
+          <div style={{display:"flex",gap:8}}>
+            {!readOnly&&!editing&&<button style={{...BO,padding:"6px 12px",fontSize:12}} onClick={function(){setEditing(true);}}>✏ Edit</button>}
+            <button style={{...BO,padding:"6px 12px"}} onClick={onClose}>✕</button>
+          </div>
+        </div>
+        <div style={{padding:20,maxHeight:"75vh",overflowY:"auto"}}>
+          {!editing?(
+            <div>
+              <div style={{marginBottom:12}}><HoldBadge card={card}/></div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:16}}>
+                {[["Year",card.year],["Brand",card.brand],["Set",card.set],["Grade",card.gradingCompany+" "+card.grade],["Cert #",card.certNumber||"—"],["Status",STATUS_LBL[card.cardStatus]]].map(function(item){
+                  return <div key={item[0]}><div style={LBL}>{item[0]}</div><div style={{fontSize:15,fontWeight:600}}>{item[1]||"—"}</div></div>;
+                })}
+              </div>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap",marginBottom:14}}>
+                {card.isRookie&&<Badge bg="#dbeafe" c="#1d4ed8" t="Rookie Card"/>}
+                {card.isAuto&&<Badge bg="#f3e8ff" c="#7c3aed" t="Autograph"/>}
+                {card.isPatch&&<Badge bg="#dcfce7" c="#15803d" t="Patch/Relic"/>}
+                {card.isSerialNumbered&&<Badge bg={C.goldBg} c={C.gold} t={"/"+card.printRun+" Print Run"}/>}
+              </div>
+              {card.gradingCompany==="BGS"&&card.bgsCenter&&(
+                <div style={{background:C.surface,borderRadius:10,padding:"12px 16px",marginBottom:14}}>
+                  <div style={LBL}>BGS Subgrades</div>
+                  <div style={{display:"flex",gap:20}}>
+                    {[["Ctr",card.bgsCenter],["Cor",card.bgsCorners],["Edg",card.bgsEdges],["Srf",card.bgsSurface]].map(function(item){
+                      return <div key={item[0]} style={{textAlign:"center"}}><div style={{fontSize:9,color:C.muted}}>{item[0]}</div><div style={{fontSize:22,fontWeight:800,color:C.gold}}>{item[1]||"—"}</div></div>;
+                    })}
+                  </div>
+                </div>
+              )}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+                {[["Cost",fmtMoney(card.purchasePrice),""],["Last Sale",fmtMoney(card.lastSalePrice)+(card.lastSaleDate?" · "+fmtDate(card.lastSaleDate):""),""],["P&L",pnl!=null?fmtMoney(pnl):"—",pnl!=null?(pnl>=0?"pos":"neg"):""]].map(function(item){
+                  return(<div key={item[0]} style={{background:item[2]==="pos"?"#e8f5ee":item[2]==="neg"?"#fdecea":C.surface,borderRadius:10,padding:"12px 14px"}}><div style={LBL}>{item[0]}</div><div style={{fontSize:15,fontWeight:800,color:item[2]==="pos"?C.green:item[2]==="neg"?C.red:C.text}}>{item[1]}</div></div>);
+                })}
+              </div>
+              {card.notes&&<div style={{fontSize:13,color:C.muted,fontStyle:"italic",padding:"12px 16px",background:C.surface,borderRadius:10,marginBottom:14}}>{card.notes}</div>}
+              <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:12}}>
+                <div style={{fontSize:10,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:C.muted,marginBottom:10}}>Manual Last Sale Update</div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+                  <Fld l="Last Sale Price"><Inp type="number" step="0.01" placeholder="e.g. 3500.00" value={manualPrice} onChange={function(e){setManualPrice(e.target.value);}}/></Fld>
+                  <Fld l="Sale Date"><Inp type="date" value={manualDate} onChange={function(e){setManualDate(e.target.value);}}/></Fld>
+                </div>
+                <button style={{...BG,padding:"8px 14px",fontSize:12}} onClick={function(){
+                  if(!manualPrice)return;
+                  var price=parseFloat(manualPrice);
+                  var updated=Object.assign({},card,{lastSalePrice:price,lastSaleDate:manualDate||new Date().toISOString().slice(0,10),alertStatus:alertOf(Object.assign({},card,{lastSalePrice:price}))});
+                  onUpdate(updated);setManualPrice("");
+                }}>Save Last Sale Price</button>
+              </div>
+              <a href={searchUrl} target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 14px",background:C.goldBg,border:"1px solid "+C.gold,borderRadius:8,fontSize:12,fontWeight:700,color:C.gold}}>🔍 View on 130point</a>
+            </div>
+          ):<CardForm card={form} upd={upd}/>}
+        </div>
+        {editing&&(
+          <div style={{display:"flex",gap:10,justifyContent:"space-between",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+            <button style={{...BD,padding:"6px 12px",fontSize:12}} onClick={function(){if(window.confirm("Delete this card?"))onDelete(card.id);}}>🗑 Delete</button>
+            <div style={{display:"flex",gap:10}}>
+              <button style={BO} onClick={function(){setEditing(false);setForm(Object.assign({},card));}}>Cancel</button>
+              <button style={BG} onClick={function(){onUpdate(form);}}>✓ Save</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SettingsModal(p){
+  var onClose=p.onClose,onResetKey=p.onResetKey;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:400,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>⚙ Settings</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20}}>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px",marginBottom:14}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>API Keys &amp; Sync</div>
+            <div style={{fontSize:12,color:C.muted,marginBottom:8}}>Reset to update your keys on this device.</div>
+            <div style={{fontSize:11,color:C.muted,marginBottom:10}}>Supabase: <strong>{(localStorage.getItem("cv_sb_url")||"Not configured").replace("https://","").slice(0,20)+"…"}</strong></div>
+            <button style={{...BD,padding:"8px 14px",fontSize:12}} onClick={onResetKey}>Reset All Keys</button>
+          </div>
+          <div style={{background:C.surface,borderRadius:10,padding:"14px 16px"}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:4}}>About</div>
+            <div style={{fontSize:12,color:C.muted,lineHeight:1.6}}>Dad &amp; Lad's Card Vault v1.5<br/>Graded card inventory tracker<br/>Data synced via Supabase</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  var [apiKey,setApiKey]=useState(null);
+  var [profile,setProfile]=useState(null);
+  var [view,setView]=useState("dashboard");
+  var [mode,setMode]=useState("buy");
+  var [dadCards,setDadCards]=useState([]);
+  var [owenCards,setOwenCards]=useState([]);
+  var [dadWL,setDadWL]=useState([]);
+  var [owenWL,setOwenWL]=useState([]);
+  var [loading,setLoading]=useState(true);
+  var [toasts,setToasts]=useState([]);
+  var [showAdd,setShowAdd]=useState(false);
+  var [showSell,setShowSell]=useState(null);
+  var [showDetail,setShowDetail]=useState(null);
+  var [showSettings,setShowSettings]=useState(false);
+  var [refreshing,setRefreshing]=useState(false);
+  var [prog,setProg]=useState({current:0,total:0,card:""});
+  var [lastRefresh,setLastRefresh]=useState(null);
+  var [search,setSearch]=useState("");
+  var [fAlert,setFAlert]=useState("all");
+  var [fStatus,setFStatus]=useState("all");
+
+  useEffect(function(){
+    async function loadData(){
+      try{
+        var k=localStorage.getItem("cv_api_key");if(k)setApiKey(k);
+        var d=lsGet("cv_dad_inventory");if(d)setDadCards(JSON.parse(d.value));
+        var o=lsGet("cv_owen_inventory");if(o)setOwenCards(JSON.parse(o.value));
+        var dw=lsGet("cv_dad_watchlist");if(dw)setDadWL(JSON.parse(dw.value));
+        var ow=lsGet("cv_owen_watchlist");if(ow)setOwenWL(JSON.parse(ow.value));
+        var lr=lsGet("cv_last_refresh");if(lr)setLastRefresh(lr.value);
+      }catch(e){}
+      setLoading(false);
+      try{
+        sbInit();
+        if(sbReady()){
+          var dd=await sbGet("cards","dad");var od=await sbGet("cards","owen");
+          var ddw=await sbGet("watchlist","dad");var odw=await sbGet("watchlist","owen");
+          if(dd){setDadCards(dd);lsSet("cv_dad_inventory",JSON.stringify(dd));}
+          if(od){setOwenCards(od);lsSet("cv_owen_inventory",JSON.stringify(od));}
+          if(ddw){setDadWL(ddw);lsSet("cv_dad_watchlist",JSON.stringify(ddw));}
+          if(odw){setOwenWL(odw);lsSet("cv_owen_watchlist",JSON.stringify(odw));}
+        }
+      }catch(e){}
+    }
+    loadData();
+  },[]);
+
+  var myCards=profile==="dad"?dadCards:owenCards;
+  var myWL=profile==="dad"?dadWL:owenWL;
+  var otherCards=profile==="dad"?owenCards:dadCards;
+  var otherName=profile==="dad"?"Lad":"Dad";
+
+  function setMyWL(wl){
+    if(profile==="dad")setDadWL(wl);else setOwenWL(wl);
+    lsSet("cv_"+profile+"_watchlist",JSON.stringify(wl));
+    sbSet("watchlist",profile,wl);
+  }
+  function saveCards(pr,cards){
+    if(pr==="dad")setDadCards(cards);else setOwenCards(cards);
+    lsSet("cv_"+pr+"_inventory",JSON.stringify(cards));
+    sbMerge("cards",pr,cards);
+  }
+  function toast(msg,type){
+    var id=uid();
+    setToasts(function(t){return t.concat([{id:id,msg:msg,type:type||"info"}]);});
+    setTimeout(function(){setToasts(function(t){return t.filter(function(x){return x.id!==id;});});},5000);
+  }
+  function addCards(cards){saveCards(profile,myCards.concat(cards));toast("Added "+cards.length+" card"+(cards.length!==1?"s":""),"success");}
+  function updateCard(id,updates){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,updates):x;}));}
+  function deleteCard(id){saveCards(profile,myCards.filter(function(x){return x.id!==id;}));setShowDetail(null);toast("Deleted","info");}
+  function sellCard(id,sd){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));toast("Marked as sold","success");}
+  function sellBulk(ids,sd){saveCards(profile,myCards.map(function(x){return ids.includes(x.id)?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));}
+  function addAndSellCards(newCards,sd){
+    var toSell=newCards.map(function(c){return Object.assign({},c,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"});});
+    saveCards(profile,myCards.concat(toSell));
+    toast("Added and sold "+toSell.length+" card"+(toSell.length!==1?"s":""),"success");
+  }
+  function bulkSavePrices(updates){
+    var updated=myCards.map(function(x){
+      if(!updates[x.id])return x;
+      var u=updates[x.id];
+      var nc=Object.assign({},x,{lastSalePrice:u.lastSalePrice,lastSaleDate:u.lastSaleDate});
+      nc.alertStatus=alertOf(nc);return nc;
+    });
+    saveCards(profile,updated);toast("Prices updated","success");
+  }
+  async function runRefresh(){
+    var active=myCards.filter(function(x){return x.cardStatus==="inventory";});
+    if(!active.length){toast("No active cards","info");return;}
+    setRefreshing(true);var updated=myCards.slice();var alertCount=0;
+    for(var i=0;i<active.length;i++){
+      var card=active[i];
+      setProg({current:i+1,total:active.length,card:card.playerName});
+      try{
+        var pr=await lookupPrice(apiKey,card);
+        if(pr&&pr.salesFound&&pr.lastSalePrice){
+          var existD=card.lastSaleDate||"",newD=pr.lastSaleDate||"";
+          if(!existD||!newD||(newD>=existD)){
+            var a=alertOf(Object.assign({},card,{lastSalePrice:pr.lastSalePrice}));
+            if(a!=="normal")alertCount++;
+            updated=updated.map(function(x){return x.id===card.id?Object.assign({},x,{lastSalePrice:pr.lastSalePrice,lastSaleDate:pr.lastSaleDate,estimatedValue:pr.avgRecentPrice||pr.lastSalePrice,alertStatus:a}):x;});
+          }
+        }
+      }catch(e){}
+      if(i<active.length-1)await new Promise(function(r){setTimeout(r,600);});
+    }
+    if(profile==="dad")setDadCards(updated.slice());else setOwenCards(updated.slice());
+    lsSet("cv_"+profile+"_inventory",JSON.stringify(updated));
+    sbSet("cards",profile,updated);
+    var now=new Date().toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+    lsSet("cv_last_refresh",now);setLastRefresh(now);
+    setRefreshing(false);setProg({current:0,total:0,card:""});
+    toast("Done · "+alertCount+" alert"+(alertCount!==1?"s":""),alertCount>0?"info":"success");
+  }
+
+  if(loading)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:18,color:C.gold,fontWeight:700}}>Loading…</div>;
+  if(!apiKey)return <SetupScreen onSave={function(k){localStorage.setItem("cv_api_key",k);setApiKey(k);}}/>;
+  if(!profile)return <ProfileScreen counts={{dad:{inventory:dadCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:dadCards.filter(function(c){return c.cardStatus==="sold";}).length},owen:{inventory:owenCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:owenCards.filter(function(c){return c.cardStatus==="sold";}).length}}} onSelect={function(pr){setProfile(pr);setView("dashboard");}} onSettings={function(){setShowSettings(true);}}/>;
+
+  return(
+    <div style={{minHeight:"100vh",background:C.bg}}>
+      <Nav profile={profile} mode={mode} view={view} onMode={setMode} onView={function(v){setView(v);setSearch("");setFAlert("all");setFStatus("all");}} onSwitch={function(){setProfile(null);}}/>
+      {view==="dashboard"&&<Dashboard cards={myCards} mode={mode} onRefresh={runRefresh} onAdd={function(){setShowAdd(true);}} refreshing={refreshing} prog={prog} lastRefresh={lastRefresh} onExport={function(type){if(type==="buyer"){exportBuyer(myCards);toast("Buyer report downloaded","success");}else{exportInternal(myCards);toast("Internal report downloaded","success");}}}/>}
+      {(view==="inventory"||view==="browse")&&<InventoryView cards={view==="browse"?otherCards:myCards} onAdd={function(){setShowAdd(true);}} onSell={function(x){setShowSell(x);}} onView={function(x){setShowDetail(x);}} mode={mode} readOnly={view==="browse"} ownerName={otherName} search={search} setSearch={setSearch} fAlert={fAlert} setFAlert={setFAlert} fStatus={fStatus} setFStatus={setFStatus} onBulkSave={bulkSavePrices}/>}
+      {view==="sell_rank"&&<SellRank cards={myCards} onView={function(x){setShowDetail(x);}}/>}
+      {view==="watchlist"&&<WatchlistView apiKey={apiKey} watchlist={myWL} setWatchlist={setMyWL} toast={toast}/>}
+      {showAdd&&<AddModal apiKey={apiKey} mode={mode} myCards={myCards} onAdd={addCards} onSellBulk={sellBulk} onAddAndSell={addAndSellCards} onClose={function(){setShowAdd(false);}} toast={toast}/>}
+      {showSell&&<SellModal card={showSell} onSell={function(sd){sellCard(showSell.id,sd);setShowSell(null);}} onClose={function(){setShowSell(null);}}/>}
+      {showDetail&&<DetailModal card={showDetail} readOnly={view==="browse"} onClose={function(){setShowDetail(null);}} onUpdate={function(u){updateCard(showDetail.id,u);setShowDetail(null);toast("Saved","success");}} onDelete={deleteCard}/>}
+      {showSettings&&<SettingsModal onClose={function(){setShowSettings(false);}} onResetKey={function(){localStorage.removeItem("cv_api_key");localStorage.removeItem("cv_sb_url");localStorage.removeItem("cv_sb_key");setApiKey(null);setShowSettings(false);}}/>}
+      <div style={{position:"fixed",bottom:20,right:20,display:"flex",flexDirection:"column",gap:8,zIndex:200,maxWidth:300}}>
+        {toasts.map(function(t){return <div key={t.id} style={{background:C.card,borderLeft:"4px solid "+(t.type==="success"?C.green:t.type==="error"?C.red:C.gold),borderRadius:10,padding:"12px 16px",fontSize:13,fontWeight:600,boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}}>{t.msg}</div>;})}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App,null));
+</script>
+</body>
+</html>
