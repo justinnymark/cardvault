@@ -25,14 +25,14 @@ var WHERE=["eBay","Card Show","LCS","Alt","Fanatics","IG/FB","Other"];
 var STATUS_LBL={inventory:"In Inventory",sold:"Sold",consigned:"Consigned",grading:"Out for Grading"};
 var BLANK={playerName:"",year:"",brand:"",set:"",isRookie:false,isAuto:false,isPatch:false,isSerialNumbered:false,printRun:"",gradingCompany:"PSA",grade:"",certNumber:"",bgsCenter:"",bgsCorners:"",bgsEdges:"",bgsSurface:"",purchasePrice:"",purchaseDate:new Date().toISOString().slice(0,10),wherePurchased:"",notes:""};
 var LOGO_B64="data:image/jpeg;base64,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";
-
+ 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
 function fmtMoney(n){return(n!=null&&n!=="")?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";}
 function fmtPct(n){return n!=null?(n>0?"+":"")+Number(n).toFixed(1)+"%":"—";}
 function fmtDate(s){return s?new Date(s+"T12:00:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"2-digit"}):"—";}
 function lsGet(k){try{var v=localStorage.getItem(k);return v?{value:v}:null;}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-
+ 
 var _sbUrl=null,_sbKey=null;
 function sbInit(){_sbUrl=localStorage.getItem("cv_sb_url");_sbKey=localStorage.getItem("cv_sb_key");}
 function sbReady(){return!!(_sbUrl&&_sbKey);}
@@ -67,7 +67,7 @@ async function testSb(url,key){
   var r=await fetch(url+"/rest/v1/cards?limit=1",{headers:{"apikey":key,"Authorization":"Bearer "+key}});
   if(!r.ok)throw new Error(await r.text());
 }
-
+ 
 async function apiCall(key,messages,useSearch){
   var body={model:"claude-sonnet-4-6",max_tokens:1500,messages:messages};
   if(useSearch)body.tools=[{type:"web_search_20250305",name:"web_search"}];
@@ -78,7 +78,7 @@ async function apiCall(key,messages,useSearch){
 }
 function getText(data){return(data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");}
 function parseJSON(txt,open,close){var s=txt.indexOf(open),e=txt.lastIndexOf(close);if(s===-1||e===-1)return null;try{return JSON.parse(txt.slice(s,e+1));}catch(e){return null;}}
-
+ 
 async function identifyCards(key,b64,mime){
   var prompt='Identify every graded sports card in this photo. Output ONLY a raw JSON array, no markdown. Each object: {playerName,year,brand,set,gradingCompany,grade,isRookie,isAuto,isPatch,isSerialNumbered,printRun,certNumber,bgsCenter,bgsCorners,bgsEdges,bgsSurface,_unclear}. Rules: gradingCompany=PSA/BGS/SGC/CGC. Read each label independently. PSA cert=numeric label. BGS cert=barcode area (starts 00). NEVER guess cert — if unreadable set null and add field to _unclear[]. BGS: read 4 subgrades. Return [] if none found.';
   var data=await apiCall(key,[{role:"user",content:[{type:"image",source:{type:"base64",media_type:mime,data:b64}},{type:"text",text:prompt}]}],false);
@@ -93,7 +93,7 @@ async function lookupWatchlist(key,query){
   var data=await apiCall(key,[{role:"user",content:'Search eBay sold listings for: "'+query+'". Return ONLY JSON: {"lastSalePrice":number_or_null,"lastSaleDate":"YYYY-MM-DD_or_null","avgRecentPrice":number_or_null,"lowestAsk":number_or_null,"salesFound":boolean,"verdict":"good_buy"|"fair"|"overpriced"|"unknown","verdictReason":"one sentence"}'}],true);
   return parseJSON(getText(data),"{","}")||null;
 }
-
+ 
 function alertOf(card){
   if(!card.purchasePrice||!card.lastSalePrice)return"normal";
   var pct=((card.lastSalePrice-card.purchasePrice)/card.purchasePrice)*100;
@@ -150,8 +150,80 @@ function checkDups(newCards,existing){
     return{card:nc,existing:match,status:match?match.cardStatus||"inventory":null};
   });
 }
-
+ 
 function csvRow(vals){return vals.map(function(v){return'"'+String(v==null?"":v).replace(/"/g,'""')+'"';}).join(",");}
+function parseCSVText(text){
+  var rows=[];var row=[];var field="";var inQ=false;
+  var s=text.replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+  for(var i=0;i<s.length;i++){
+    var ch=s[i];
+    if(inQ){
+      if(ch==='"'){if(s[i+1]==='"'){field+='"';i++;}else{inQ=false;}}
+      else field+=ch;
+    }else{
+      if(ch==='"')inQ=true;
+      else if(ch===","){row.push(field);field="";}
+      else if(ch==="\n"){row.push(field);rows.push(row);row=[];field="";}
+      else field+=ch;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  rows=rows.filter(function(r){return!(r.length===1&&r[0]==="");});
+  if(!rows.length)return{headers:[],rows:[]};
+  var headers=rows[0].map(function(h){return h.trim();});
+  var data=rows.slice(1).map(function(r){var o={};headers.forEach(function(h,i){o[h]=r[i]!==undefined?r[i].trim():"";});return o;});
+  return{headers:headers,rows:data};
+}
+function normHead(h){return String(h||"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+var CSV_FIELD_ALIASES={
+  playerName:["player","playername","name","athlete"],
+  year:["year","cardyear"],
+  brand:["brand","manufacturer"],
+  set:["set","setname","cardset"],
+  gradingCompany:["gradingco","gradingcompany","grader","company"],
+  grade:["grade"],
+  certNumber:["cert","certnumber","certno","certificatenumber"],
+  isRookie:["rc","rookie","isrookie"],
+  isAuto:["auto","autograph","isauto"],
+  isPatch:["patch","ispatch"],
+  isSerialNumbered:["serial","serialnumbered","isserialnumbered"],
+  printRun:["printrun","runsize","numbered"],
+  purchasePrice:["purchaseprice","cost","price","pricepaid","paid"],
+  purchaseDate:["purchasedate","datepurchased","datebought","date"],
+  wherePurchased:["where","wherepurchased","source","purchasedfrom"],
+  bgsCenter:["bgscenter","center","ctr"],
+  bgsCorners:["bgscorners","corners","cor"],
+  bgsEdges:["bgsedges","edges","edg"],
+  bgsSurface:["bgssurface","surface","srf"],
+  notes:["notes","note","comments"]
+};
+function autoMapHeaders(headers){
+  var map={};
+  headers.forEach(function(h){
+    var n=normHead(h);var found=null;
+    Object.keys(CSV_FIELD_ALIASES).forEach(function(field){
+      if(found)return;
+      if(CSV_FIELD_ALIASES[field].indexOf(n)!==-1)found=field;
+    });
+    map[h]=found;
+  });
+  return map;
+}
+function boolFromCSV(v){var s=String(v||"").trim().toLowerCase();return s==="yes"||s==="y"||s==="true"||s==="1"||s==="x";}
+function rowsToCards(rows,map){
+  return rows.map(function(r){
+    var c=Object.assign({},BLANK);
+    Object.keys(map).forEach(function(h){
+      var field=map[h];if(!field)return;
+      var val=r[h];
+      if(["isRookie","isAuto","isPatch","isSerialNumbered"].indexOf(field)!==-1)c[field]=boolFromCSV(val);
+      else c[field]=val||"";
+    });
+    if(!c.gradingCompany)c.gradingCompany="PSA";
+    if(!c.purchaseDate)c.purchaseDate=new Date().toISOString().slice(0,10);
+    return c;
+  });
+}
 function dlCSV(csv,fn){var blob=new Blob([csv],{type:"text/csv"});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);}
 function exportInternal(cards){
   var h=["Player","Year","Brand","Set","Grading Co","Grade","Cert #","BGS Ctr","BGS Cor","BGS Edg","BGS Srf","RC","Auto","Patch","Serial","Print Run","Purchase Price","Purchase Date","Where","Last Sale Price","Last Sale Date","Unrealized G/L $","Unrealized G/L %","Realized G/L $","Realized G/L %","Simple ROI %","Annualized ROI %","Days Held","Sale Price","Sale Date","Alert","Status","Notes"];
@@ -175,7 +247,7 @@ function exportBuyer(cards){
   });
   dlCSV([h.join(",")].concat(rows).join("\n"),"CardVault_Buyer_"+new Date().toISOString().slice(0,10)+".csv");
 }
-
+ 
 async function compressImg(dataUrl,maxPx,q){
   return new Promise(function(resolve,reject){
     var img=new Image();
@@ -194,26 +266,26 @@ async function compressImg(dataUrl,maxPx,q){
     img.src=dataUrl;
   });
 }
-
+ 
 var INP={padding:"9px 11px",background:"#e8ede3",border:"1px solid #ccd8c4",borderRadius:7,color:"#1a1a1a",fontSize:14,width:"100%",outline:"none"};
 var BG={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:"#2d6a3f",color:"#fff",display:"inline-flex",alignItems:"center",gap:6};
 var BO={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",background:"transparent",border:"1px solid #ccd8c4",color:"#6b7d65",display:"inline-flex",alignItems:"center",gap:6};
 var BD={padding:"10px 18px",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",background:"#fdecea",border:"1px solid #f5a0a0",color:"#c0392b",display:"inline-flex",alignItems:"center",gap:6};
 var LBL={fontSize:10,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"#6b7d65",display:"block",marginBottom:5};
-
+ 
 function Inp(p){return <input style={INP} {...p}/>;}
 function Sel(p){var ch=p.children;var rest=Object.assign({},p);delete rest.children;return <select style={INP} {...rest}>{ch}</select>;}
 function Fld(p){return <div style={{display:"flex",flexDirection:"column",gap:4,gridColumn:p.s2?"span 2":undefined}}><span style={LBL}>{p.l}</span>{p.children}</div>;}
 function HR(){return <hr style={{border:"none",borderTop:"1px solid #ccd8c4",margin:"14px 0"}}/>;}
 function Badge(p){return <span style={{fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:3,background:p.bg,color:p.c,letterSpacing:.5}}>{p.t}</span>;}
-
+ 
 function HoldBadge(p){
   var h=holdSig(p.card);
   var map={sell:{bg:"#e8f5ee",c:C.green,t:"✅ Sell"},watch:{bg:"#fff8ee",c:C.amber,t:"⚡ Consider"},hold:{bg:C.surface,c:C.muted,t:"⏳ Hold"},underwater:{bg:"#fdecea",c:C.red,t:"🔴 Under"},unknown:{bg:C.surface,c:C.muted,t:"— No Data"}};
   var s=map[h]||map.unknown;
   return <Badge bg={s.bg} c={s.c} t={s.t}/>;
 }
-
+ 
 function SetupScreen(p){
   var [key,setKey]=useState("");
   var [sbUrl,setSbUrl]=useState(localStorage.getItem("cv_sb_url")||"");
@@ -262,7 +334,7 @@ function SetupScreen(p){
     </div>
   );
 }
-
+ 
 function ProfileScreen(p){
   var counts=p.counts,onSelect=p.onSelect,onSettings=p.onSettings;
   return(
@@ -290,12 +362,12 @@ function ProfileScreen(p){
     </div>
   );
 }
-
+ 
 function Nav(p){
   var profile=p.profile,mode=p.mode,view=p.view,onMode=p.onMode,onView=p.onView,onSwitch=p.onSwitch;
   var name=profile==="dad"?"Dad":"Lad";
   var other=profile==="dad"?"Lad":"Dad";
-  var tabs=[["inventory","My Cards"],["sell_rank","Sell Now"],["watchlist","Watchlist"],["browse",other+"'s"]];
+  var tabs=[["inventory","My Cards"],["sell_rank","Sell Now"],["watchlist","Watchlist"],["shows","Shows"],["browse",other+"'s"]];
   return(
     <div style={{background:C.card,borderBottom:"1px solid "+C.border,position:"sticky",top:0,zIndex:20,boxShadow:"0 1px 4px rgba(0,0,0,0.06)"}}>
       <div style={{display:"flex",alignItems:"center",padding:"0 8px",height:52,gap:5,overflowX:"auto"}}>
@@ -327,7 +399,7 @@ function Nav(p){
     </div>
   );
 }
-
+ 
 function Dashboard(p){
   var cards=p.cards,mode=p.mode,onRefresh=p.onRefresh,onAdd=p.onAdd,refreshing=p.refreshing,prog=p.prog,lastRefresh=p.lastRefresh,onExport=p.onExport;
   var active=cards.filter(function(x){return x.cardStatus==="inventory";});
@@ -380,7 +452,7 @@ function Dashboard(p){
     </div>
   );
 }
-
+ 
 function SellRank(p){
   var cards=p.cards,onView=p.onView;
   var active=cards.filter(function(x){return x.cardStatus==="inventory";});
@@ -426,7 +498,7 @@ function SellRank(p){
     </div>
   );
 }
-
+ 
 function WatchlistView(p){
   var apiKey=p.apiKey,watchlist=p.watchlist,setWatchlist=p.setWatchlist,toast=p.toast;
   var [query,setQuery]=useState("");
@@ -500,7 +572,7 @@ function WatchlistView(p){
     </div>
   );
 }
-
+ 
 function CardForm(p){
   var card=p.card,upd=p.upd;
   var G={display:"grid",gridTemplateColumns:"1fr 1fr",gap:12};
@@ -538,9 +610,9 @@ function CardForm(p){
     </div>
   );
 }
-
+ 
 function InventoryView(p){
-  var cards=p.cards,onAdd=p.onAdd,onSell=p.onSell,onView=p.onView,mode=p.mode,readOnly=p.readOnly,ownerName=p.ownerName,onBulkSave=p.onBulkSave;
+  var cards=p.cards,onAdd=p.onAdd,onImport=p.onImport,onSell=p.onSell,onView=p.onView,mode=p.mode,readOnly=p.readOnly,ownerName=p.ownerName,onBulkSave=p.onBulkSave;
   var search=p.search,setSearch=p.setSearch,fAlert=p.fAlert,setFAlert=p.setFAlert,fStatus=p.fStatus,setFStatus=p.setFStatus;
   var [showF,setShowF]=useState(false);
   var [fGC,setFGC]=useState("all");
@@ -634,6 +706,7 @@ function InventoryView(p){
         {!readOnly&&(
           <div style={{display:"flex",gap:8}}>
             <button style={{...BG,padding:"8px 14px",fontSize:12,background:mode==="sell"?C.red:C.gold}} onClick={onAdd}>{mode==="sell"?"− Sell Card":"+ Add Card"}</button>
+            {mode!=="sell"&&<button style={{...BO,padding:"8px 14px",fontSize:12}} onClick={onImport}>⇪ Import CSV</button>}
             <button style={{...BO,padding:"8px 14px",fontSize:12,color:bulkMode?C.gold:C.muted,borderColor:bulkMode?C.gold:C.border}} onClick={function(){setBulkMode(function(v){return !v;});}}>✏ Bulk Price</button>
           </div>
         )}
@@ -708,7 +781,110 @@ function InventoryView(p){
     </div>
   );
 }
-
+ 
+var CSV_FIELD_LABELS={playerName:"Player",year:"Year",brand:"Brand",set:"Set",gradingCompany:"Grading Co",grade:"Grade",certNumber:"Cert #",isRookie:"Rookie",isAuto:"Auto",isPatch:"Patch",isSerialNumbered:"Serial #'d",printRun:"Print Run",purchasePrice:"Purchase Price",purchaseDate:"Purchase Date",wherePurchased:"Where Purchased",bgsCenter:"BGS Center",bgsCorners:"BGS Corners",bgsEdges:"BGS Edges",bgsSurface:"BGS Surface",notes:"Notes"};
+function ImportModal(p){
+  var myCards=p.myCards,onImport=p.onImport,onClose=p.onClose,toast=p.toast;
+  var [step,setStep]=useState("paste");
+  var [csvText,setCsvText]=useState("");
+  var [parsed,setParsed]=useState({headers:[],rows:[]});
+  var [colMap,setColMap]=useState({});
+  var [skipDups,setSkipDups]=useState(true);
+  function onFile(e){
+    var f=e.target.files&&e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){setCsvText(String(ev.target.result||""));};
+    r.readAsText(f);
+  }
+  function doParse(){
+    var pr=parseCSVText(csvText);
+    if(!pr.rows.length){toast("Couldn't find any rows in that CSV","error");return;}
+    setParsed(pr);setColMap(autoMapHeaders(pr.headers));setStep("map");
+  }
+  var mappedCount=Object.keys(colMap).filter(function(h){return!!colMap[h];}).length;
+  var previewCards=useMemo(function(){return step==="map"||step==="preview"?rowsToCards(parsed.rows,colMap):[];},[parsed,colMap,step]);
+  var dupInfo=useMemo(function(){return checkDups(previewCards,myCards);},[previewCards,myCards]);
+  var dupCount=dupInfo.filter(function(d){return!!d.existing;}).length;
+  function doImport(){
+    var toAdd=[];
+    dupInfo.forEach(function(d){
+      if(d.existing&&skipDups)return;
+      toAdd.push(Object.assign({},d.card,{id:uid(),addedDate:new Date().toISOString().slice(0,10),cardStatus:"inventory",alertStatus:"normal",lastSalePrice:null,lastSaleDate:null,estimatedValue:null}));
+    });
+    if(!toAdd.length){toast("Nothing to import","info");return;}
+    onImport(toAdd);onClose();
+  }
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:640,maxHeight:"85vh",display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>Import from CSV</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20,overflowY:"auto",flex:1}}>
+          {step==="paste"&&(
+            <div>
+              <div style={{fontSize:12,color:C.muted,marginBottom:12}}>Upload your spreadsheet as a CSV, or paste its contents below. The first row should be column headers (Player, Year, Brand, Grade, Cert #, Purchase Price, etc).</div>
+              <input type="file" accept=".csv,text/csv" onChange={onFile} style={{marginBottom:12}}/>
+              <textarea value={csvText} onChange={function(e){setCsvText(e.target.value);}} placeholder="Player,Year,Brand,Set,Grading Co,Grade,Cert #,Purchase Price,Purchase Date..." style={{...INP,height:180,fontFamily:"monospace",fontSize:12,resize:"vertical"}}/>
+            </div>
+          )}
+          {step==="map"&&(
+            <div>
+              <div style={{fontSize:12,color:C.muted,marginBottom:12}}>Matched {mappedCount} of {parsed.headers.length} columns automatically. Fix any that look wrong, then continue.</div>
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {parsed.headers.map(function(h){
+                  return(
+                    <div key={h} style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,alignItems:"center"}}>
+                      <div style={{fontSize:13,fontWeight:600}}>{h}</div>
+                      <Sel value={colMap[h]||""} onChange={function(e){var v=e.target.value||null;setColMap(function(m){return Object.assign({},m,{[h]:v});});}}>
+                        <option value="">— Ignore —</option>
+                        {Object.keys(CSV_FIELD_LABELS).map(function(f){return <option key={f} value={f}>{CSV_FIELD_LABELS[f]}</option>;})}
+                      </Sel>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {step==="preview"&&(
+            <div>
+              <div style={{fontSize:12,color:C.muted,marginBottom:12}}>{previewCards.length} card{previewCards.length!==1?"s":""} found. {dupCount>0?dupCount+" look like duplicates of cards already in inventory (matched by cert #).":""}</div>
+              {dupCount>0&&(
+                <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12,fontWeight:600,marginBottom:12,cursor:"pointer"}}>
+                  <input type="checkbox" checked={skipDups} onChange={function(e){setSkipDups(e.target.checked);}}/>
+                  Skip likely duplicates ({dupCount})
+                </label>
+              )}
+              <div style={{border:"1px solid "+C.border,borderRadius:8,overflow:"hidden"}}>
+                {dupInfo.slice(0,25).map(function(d,i){
+                  var isDup=!!d.existing;
+                  return(
+                    <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"8px 12px",fontSize:12,borderBottom:i<dupInfo.length-1?"1px solid "+C.border:"none",background:isDup?"#fdecea":"transparent",opacity:isDup&&skipDups?0.55:1}}>
+                      <span>{d.card.playerName||"(no name)"} · {d.card.year||"—"} {d.card.brand||""} · {d.card.gradingCompany} {d.card.grade}</span>
+                      {isDup&&<span style={{color:C.red,fontWeight:700}}>Duplicate</span>}
+                    </div>
+                  );
+                })}
+                {dupInfo.length>25&&<div style={{padding:"8px 12px",fontSize:11,color:C.muted,textAlign:"center"}}>+ {dupInfo.length-25} more</div>}
+              </div>
+            </div>
+          )}
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          {step!=="paste"&&<button style={BO} onClick={function(){setStep(step==="preview"?"map":"paste");}}>Back</button>}
+          <button style={BO} onClick={onClose}>Cancel</button>
+          {step==="paste"&&<button style={BG} onClick={doParse}>Continue</button>}
+          {step==="map"&&<button style={BG} onClick={function(){setStep("preview");}}>Continue</button>}
+          {step==="preview"&&<button style={BG} onClick={doImport}>Import {skipDups?previewCards.length-dupCount:previewCards.length} Card{(skipDups?previewCards.length-dupCount:previewCards.length)!==1?"s":""}</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+ 
+</script>
+<script type="text/babel" data-presets="react">
 function AddModal(p){
   var apiKey=p.apiKey,mode=p.mode,myCards=p.myCards,onAdd=p.onAdd,onSellBulk=p.onSellBulk,onAddAndSell=p.onAddAndSell,onClose=p.onClose,toast=p.toast;
   var [tab,setTab]=useState("photo");
@@ -990,10 +1166,10 @@ function AddModal(p){
     </div>
   );
 }
-
+ 
 function SellModal(p){
-  var card=p.card,onSell=p.onSell,onClose=p.onClose;
-  var [sd,setSd]=useState({price:"",date:new Date().toISOString().slice(0,10)});
+  var card=p.card,onSell=p.onSell,onClose=p.onClose,shows=p.shows||[];
+  var [sd,setSd]=useState({price:"",date:new Date().toISOString().slice(0,10),showId:""});
   var profit=sd.price&&card.purchasePrice?parseFloat(sd.price)-parseFloat(card.purchasePrice):null;
   return(
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
@@ -1011,6 +1187,12 @@ function SellModal(p){
             <Fld l="Sale Price *"><Inp type="number" step="0.01" placeholder="0.00" value={sd.price} onChange={function(e){setSd(function(prev){return Object.assign({},prev,{price:e.target.value});});}}/></Fld>
             <Fld l="Sale Date"><Inp type="date" value={sd.date} onChange={function(e){setSd(function(prev){return Object.assign({},prev,{date:e.target.value});});}}/></Fld>
           </div>
+          {shows.length>0&&<div style={{marginBottom:14}}><Fld l="Sold At Show (optional)">
+            <Sel value={sd.showId} onChange={function(e){setSd(function(prev){return Object.assign({},prev,{showId:e.target.value});});}}>
+              <option value="">— Online / Not a show —</option>
+              {shows.map(function(s){return <option key={s.id} value={s.id}>{s.name} ({fmtDate(s.date)})</option>;})}
+            </Sel>
+          </Fld></div>}
           {profit!=null&&<div style={{padding:"12px 16px",borderRadius:10,background:profit>=0?"#e8f5ee":"#fdecea"}}><span style={{fontSize:18,fontWeight:800,color:profit>=0?C.green:C.red}}>{profit>=0?"+":""}{fmtMoney(profit)} ({fmtPct(card.purchasePrice?profit/parseFloat(card.purchasePrice)*100:null)})</span></div>}
         </div>
         <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
@@ -1021,7 +1203,7 @@ function SellModal(p){
     </div>
   );
 }
-
+ 
 function DetailModal(p){
   var card=p.card,readOnly=p.readOnly,onClose=p.onClose,onUpdate=p.onUpdate,onDelete=p.onDelete;
   var [editing,setEditing]=useState(false);
@@ -1102,7 +1284,7 @@ function DetailModal(p){
     </div>
   );
 }
-
+ 
 function SettingsModal(p){
   var onClose=p.onClose,onResetKey=p.onResetKey;
   return(
@@ -1128,7 +1310,91 @@ function SettingsModal(p){
     </div>
   );
 }
-
+ 
+function showStats(show,cards){
+  var sold=cards.filter(function(c){return c.showId===show.id&&c.cardStatus==="sold";});
+  var revenue=sold.reduce(function(s,c){return s+(parseFloat(c.salePrice)||0);},0);
+  var cost=sold.reduce(function(s,c){return s+(parseFloat(c.purchasePrice)||0);},0);
+  var exp=(parseFloat(show.tableCost)||0)+(parseFloat(show.travelCost)||0)+(parseFloat(show.otherCost)||0);
+  return{count:sold.length,revenue:revenue,cost:cost,expenses:exp,net:revenue-cost-exp};
+}
+function ShowFormModal(p){
+  var editing=p.editing,onSave=p.onSave,onClose=p.onClose;
+  var [f,setF]=useState(editing||{name:"",date:new Date().toISOString().slice(0,10),location:"",tableCost:"",travelCost:"",otherCost:"",notes:""});
+  function upd(k,v){setF(function(prev){return Object.assign({},prev,{[k]:v});});}
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:C.card,borderRadius:16,width:"100%",maxWidth:460,overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"18px 20px",borderBottom:"1px solid "+C.border}}>
+          <div style={{fontSize:20,fontWeight:800}}>{editing?"Edit Show":"Add Show"}</div>
+          <button onClick={onClose} style={{...BO,padding:"6px 12px"}}>✕</button>
+        </div>
+        <div style={{padding:20,display:"flex",flexDirection:"column",gap:12}}>
+          <Fld l="Show Name *"><Inp value={f.name} onChange={function(e){upd("name",e.target.value);}} placeholder="e.g. Spring Card Expo"/></Fld>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+            <Fld l="Date"><Inp type="date" value={f.date} onChange={function(e){upd("date",e.target.value);}}/></Fld>
+            <Fld l="Location"><Inp value={f.location} onChange={function(e){upd("location",e.target.value);}}/></Fld>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+            <Fld l="Table Cost"><Inp type="number" step="0.01" value={f.tableCost} onChange={function(e){upd("tableCost",e.target.value);}}/></Fld>
+            <Fld l="Travel Cost"><Inp type="number" step="0.01" value={f.travelCost} onChange={function(e){upd("travelCost",e.target.value);}}/></Fld>
+            <Fld l="Other Cost"><Inp type="number" step="0.01" value={f.otherCost} onChange={function(e){upd("otherCost",e.target.value);}}/></Fld>
+          </div>
+          <Fld l="Notes"><Inp value={f.notes} onChange={function(e){upd("notes",e.target.value);}}/></Fld>
+        </div>
+        <div style={{display:"flex",gap:10,justifyContent:"flex-end",padding:"16px 20px",borderTop:"1px solid "+C.border}}>
+          <button style={BO} onClick={onClose}>Cancel</button>
+          <button style={BG} onClick={function(){if(f.name)onSave(f);}}>Save Show</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+function ShowsView(p){
+  var shows=p.shows,cards=p.cards,onAdd=p.onAdd,onUpdate=p.onUpdate,onDelete=p.onDelete;
+  var [editing,setEditing]=useState(null);
+  var [showForm,setShowForm]=useState(false);
+  var sorted=shows.slice().sort(function(a,b){return(b.date||"").localeCompare(a.date||"");});
+  return(
+    <div style={{padding:"16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontSize:20,fontWeight:800}}>Card Shows</div>
+        <button style={BG} onClick={function(){setEditing(null);setShowForm(true);}}>+ Add Show</button>
+      </div>
+      {!sorted.length&&<div style={{textAlign:"center",padding:48,color:C.muted}}><div style={{fontSize:32,marginBottom:12}}>🏟️</div><div style={{fontWeight:700,marginBottom:16}}>No shows logged yet</div><button style={BG} onClick={function(){setEditing(null);setShowForm(true);}}>+ Add Your First Show</button></div>}
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {sorted.map(function(s){
+          var st=showStats(s,cards);
+          return(
+            <div key={s.id} style={{background:C.card,border:"1px solid "+C.border,borderRadius:10,padding:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <div style={{fontSize:16,fontWeight:800}}>{s.name}</div>
+                  <div style={{fontSize:12,color:C.muted,marginTop:2}}>{fmtDate(s.date)}{s.location?" · "+s.location:""}</div>
+                </div>
+                <div style={{display:"flex",gap:6}}>
+                  <button style={{...BO,padding:"6px 10px",fontSize:11}} onClick={function(){setEditing(s);setShowForm(true);}}>Edit</button>
+                  <button style={{...BD,padding:"6px 10px",fontSize:11}} onClick={function(){if(confirm("Delete "+s.name+"?"))onDelete(s.id);}}>Delete</button>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginTop:14}}>
+                <div><div style={LBL}>Cards Sold</div><div style={{fontSize:16,fontWeight:700}}>{st.count}</div></div>
+                <div><div style={LBL}>Revenue</div><div style={{fontSize:16,fontWeight:700}}>{fmtMoney(st.revenue)}</div></div>
+                <div><div style={LBL}>Expenses</div><div style={{fontSize:16,fontWeight:700}}>{fmtMoney(st.expenses)}</div></div>
+                <div><div style={LBL}>Net</div><div style={{fontSize:16,fontWeight:800,color:st.net>=0?C.green:C.red}}>{st.net>=0?"+":""}{fmtMoney(st.net)}</div></div>
+              </div>
+              {s.notes&&<div style={{fontSize:12,color:C.muted,marginTop:10,fontStyle:"italic"}}>{s.notes}</div>}
+            </div>
+          );
+        })}
+      </div>
+      {showForm&&<ShowFormModal editing={editing} onClose={function(){setShowForm(false);}} onSave={function(f){if(editing)onUpdate(editing.id,f);else onAdd(f);setShowForm(false);}}/>}
+    </div>
+  );
+}
+ 
+</script>
+<script type="text/babel" data-presets="react">
 function App(){
   var [apiKey,setApiKey]=useState(null);
   var [profile,setProfile]=useState(null);
@@ -1138,9 +1404,12 @@ function App(){
   var [owenCards,setOwenCards]=useState([]);
   var [dadWL,setDadWL]=useState([]);
   var [owenWL,setOwenWL]=useState([]);
+  var [dadShows,setDadShows]=useState([]);
+  var [owenShows,setOwenShows]=useState([]);
   var [loading,setLoading]=useState(true);
   var [toasts,setToasts]=useState([]);
   var [showAdd,setShowAdd]=useState(false);
+  var [showImport,setShowImport]=useState(false);
   var [showSell,setShowSell]=useState(null);
   var [showDetail,setShowDetail]=useState(null);
   var [showSettings,setShowSettings]=useState(false);
@@ -1150,7 +1419,7 @@ function App(){
   var [search,setSearch]=useState("");
   var [fAlert,setFAlert]=useState("all");
   var [fStatus,setFStatus]=useState("all");
-
+ 
   useEffect(function(){
     async function loadData(){
       try{
@@ -1159,6 +1428,8 @@ function App(){
         var o=lsGet("cv_owen_inventory");if(o)setOwenCards(JSON.parse(o.value));
         var dw=lsGet("cv_dad_watchlist");if(dw)setDadWL(JSON.parse(dw.value));
         var ow=lsGet("cv_owen_watchlist");if(ow)setOwenWL(JSON.parse(ow.value));
+        var ds=lsGet("cv_dad_shows");if(ds)setDadShows(JSON.parse(ds.value));
+        var os=lsGet("cv_owen_shows");if(os)setOwenShows(JSON.parse(os.value));
         var lr=lsGet("cv_last_refresh");if(lr)setLastRefresh(lr.value);
       }catch(e){}
       setLoading(false);
@@ -1167,21 +1438,34 @@ function App(){
         if(sbReady()){
           var dd=await sbGet("cards","dad");var od=await sbGet("cards","owen");
           var ddw=await sbGet("watchlist","dad");var odw=await sbGet("watchlist","owen");
+          var dds=await sbGet("shows","dad");var ods=await sbGet("shows","owen");
           if(dd){setDadCards(dd);lsSet("cv_dad_inventory",JSON.stringify(dd));}
           if(od){setOwenCards(od);lsSet("cv_owen_inventory",JSON.stringify(od));}
           if(ddw){setDadWL(ddw);lsSet("cv_dad_watchlist",JSON.stringify(ddw));}
           if(odw){setOwenWL(odw);lsSet("cv_owen_watchlist",JSON.stringify(odw));}
+          if(dds){setDadShows(dds);lsSet("cv_dad_shows",JSON.stringify(dds));}
+          if(ods){setOwenShows(ods);lsSet("cv_owen_shows",JSON.stringify(ods));}
         }
       }catch(e){}
     }
     loadData();
   },[]);
-
+ 
   var myCards=profile==="dad"?dadCards:owenCards;
   var myWL=profile==="dad"?dadWL:owenWL;
+  var myShows=profile==="dad"?dadShows:owenShows;
   var otherCards=profile==="dad"?owenCards:dadCards;
   var otherName=profile==="dad"?"Lad":"Dad";
-
+ 
+  function saveShows(pr,shows){
+    if(pr==="dad")setDadShows(shows);else setOwenShows(shows);
+    lsSet("cv_"+pr+"_shows",JSON.stringify(shows));
+    sbMerge("shows",pr,shows);
+  }
+  function addShow(f){saveShows(profile,myShows.concat([Object.assign({},f,{id:uid()})]));toast("Show added","success");}
+  function updateShow(id,f){saveShows(profile,myShows.map(function(s){return s.id===id?Object.assign({},s,f):s;}));toast("Show updated","success");}
+  function deleteShow(id){saveShows(profile,myShows.filter(function(s){return s.id!==id;}));toast("Show deleted","info");}
+ 
   function setMyWL(wl){
     if(profile==="dad")setDadWL(wl);else setOwenWL(wl);
     lsSet("cv_"+profile+"_watchlist",JSON.stringify(wl));
@@ -1200,7 +1484,7 @@ function App(){
   function addCards(cards){saveCards(profile,myCards.concat(cards));toast("Added "+cards.length+" card"+(cards.length!==1?"s":""),"success");}
   function updateCard(id,updates){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,updates):x;}));}
   function deleteCard(id){saveCards(profile,myCards.filter(function(x){return x.id!==id;}));setShowDetail(null);toast("Deleted","info");}
-  function sellCard(id,sd){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));toast("Marked as sold","success");}
+  function sellCard(id,sd){saveCards(profile,myCards.map(function(x){return x.id===id?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,showId:sd.showId||null,alertStatus:"normal"}):x;}));toast("Marked as sold","success");}
   function sellBulk(ids,sd){saveCards(profile,myCards.map(function(x){return ids.includes(x.id)?Object.assign({},x,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"}):x;}));}
   function addAndSellCards(newCards,sd){
     var toSell=newCards.map(function(c){return Object.assign({},c,{cardStatus:"sold",salePrice:sd.price,saleDate:sd.date,alertStatus:"normal"});});
@@ -1244,20 +1528,22 @@ function App(){
     setRefreshing(false);setProg({current:0,total:0,card:""});
     toast("Done · "+alertCount+" alert"+(alertCount!==1?"s":""),alertCount>0?"info":"success");
   }
-
+ 
   if(loading)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:18,color:C.gold,fontWeight:700}}>Loading…</div>;
   if(!apiKey)return <SetupScreen onSave={function(k){localStorage.setItem("cv_api_key",k);setApiKey(k);}}/>;
   if(!profile)return <ProfileScreen counts={{dad:{inventory:dadCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:dadCards.filter(function(c){return c.cardStatus==="sold";}).length},owen:{inventory:owenCards.filter(function(c){return c.cardStatus==="inventory";}).length,sold:owenCards.filter(function(c){return c.cardStatus==="sold";}).length}}} onSelect={function(pr){setProfile(pr);setView("dashboard");}} onSettings={function(){setShowSettings(true);}}/>;
-
+ 
   return(
     <div style={{minHeight:"100vh",background:C.bg}}>
       <Nav profile={profile} mode={mode} view={view} onMode={setMode} onView={function(v){setView(v);setSearch("");setFAlert("all");setFStatus("all");}} onSwitch={function(){setProfile(null);}}/>
       {view==="dashboard"&&<Dashboard cards={myCards} mode={mode} onRefresh={runRefresh} onAdd={function(){setShowAdd(true);}} refreshing={refreshing} prog={prog} lastRefresh={lastRefresh} onExport={function(type){if(type==="buyer"){exportBuyer(myCards);toast("Buyer report downloaded","success");}else{exportInternal(myCards);toast("Internal report downloaded","success");}}}/>}
-      {(view==="inventory"||view==="browse")&&<InventoryView cards={view==="browse"?otherCards:myCards} onAdd={function(){setShowAdd(true);}} onSell={function(x){setShowSell(x);}} onView={function(x){setShowDetail(x);}} mode={mode} readOnly={view==="browse"} ownerName={otherName} search={search} setSearch={setSearch} fAlert={fAlert} setFAlert={setFAlert} fStatus={fStatus} setFStatus={setFStatus} onBulkSave={bulkSavePrices}/>}
+      {(view==="inventory"||view==="browse")&&<InventoryView cards={view==="browse"?otherCards:myCards} onAdd={function(){setShowAdd(true);}} onImport={function(){setShowImport(true);}} onSell={function(x){setShowSell(x);}} onView={function(x){setShowDetail(x);}} mode={mode} readOnly={view==="browse"} ownerName={otherName} search={search} setSearch={setSearch} fAlert={fAlert} setFAlert={setFAlert} fStatus={fStatus} setFStatus={setFStatus} onBulkSave={bulkSavePrices}/>}
       {view==="sell_rank"&&<SellRank cards={myCards} onView={function(x){setShowDetail(x);}}/>}
       {view==="watchlist"&&<WatchlistView apiKey={apiKey} watchlist={myWL} setWatchlist={setMyWL} toast={toast}/>}
+      {view==="shows"&&<ShowsView shows={myShows} cards={myCards} onAdd={addShow} onUpdate={updateShow} onDelete={deleteShow}/>}
       {showAdd&&<AddModal apiKey={apiKey} mode={mode} myCards={myCards} onAdd={addCards} onSellBulk={sellBulk} onAddAndSell={addAndSellCards} onClose={function(){setShowAdd(false);}} toast={toast}/>}
-      {showSell&&<SellModal card={showSell} onSell={function(sd){sellCard(showSell.id,sd);setShowSell(null);}} onClose={function(){setShowSell(null);}}/>}
+      {showImport&&<ImportModal myCards={myCards} onImport={addCards} onClose={function(){setShowImport(false);}} toast={toast}/>}
+      {showSell&&<SellModal card={showSell} shows={myShows} onSell={function(sd){sellCard(showSell.id,sd);setShowSell(null);}} onClose={function(){setShowSell(null);}}/>}
       {showDetail&&<DetailModal card={showDetail} readOnly={view==="browse"} onClose={function(){setShowDetail(null);}} onUpdate={function(u){updateCard(showDetail.id,u);setShowDetail(null);toast("Saved","success");}} onDelete={deleteCard}/>}
       {showSettings&&<SettingsModal onClose={function(){setShowSettings(false);}} onResetKey={function(){localStorage.removeItem("cv_api_key");localStorage.removeItem("cv_sb_url");localStorage.removeItem("cv_sb_key");setApiKey(null);setShowSettings(false);}}/>}
       <div style={{position:"fixed",bottom:20,right:20,display:"flex",flexDirection:"column",gap:8,zIndex:200,maxWidth:300}}>
@@ -1266,7 +1552,7 @@ function App(){
     </div>
   );
 }
-
+ 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App,null));
 </script>
 </body>
